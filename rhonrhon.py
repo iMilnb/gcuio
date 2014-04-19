@@ -64,9 +64,9 @@ class Bot(irc.bot.SingleServerIRCBot):
         urls = re.findall(r'(https?://[^\s]+)', pl)
 
         tonick = []
-        tomatch = r'^\ *((?!https?)[^:]+)\ *:\ *'
+        tomatch = r'^\ *([^:]+)\ *:\ *'
         tosub = re.search(tomatch, pl)
-        if tosub:
+        if tosub and not re.search(r'https?', tosub.group(1)):
             tonick = tosub.group(1).replace(' ', '').split(',')
             pl = re.sub(tomatch, '', pl)
 
