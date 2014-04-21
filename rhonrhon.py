@@ -49,6 +49,9 @@ class Bot(irc.bot.SingleServerIRCBot):
         if (re.search('[\[#]\ *nolog\ *[#\]]', pl, re.I)):
             return
 
+        date, clock = datetime.datetime.utcnow().isoformat().split('T')
+        channel = ev.target.replace('#', '')
+
         tags = []
         tagmatch = '#\ *([^#]+)\ *#'
         tagsub = re.search(tagmatch, pl)
@@ -58,15 +61,18 @@ class Bot(irc.bot.SingleServerIRCBot):
 
         urls = re.findall('(https?://[^\s]+)', pl)
 
+        has_nick = False
         tonick = []
         tomatch = '^\ *([^:]+)\ *:\ *'
         tosub = re.search(tomatch, pl)
         if tosub and not re.search('https?', tosub.group(1)):
-            tonick = tosub.group(1).replace(' ', '').split(',')
-            pl = re.sub(tomatch, '', pl)
-
-        date, clock = datetime.datetime.utcnow().isoformat().split('T')
-        channel = ev.target.replace('#', '')
+            for t in tosub.group(1).replace(' ', '').split(','):
+                for ch in self.channels.keys():
+                    if self.channels[ch].has_user(t) and ch == '#' + channel:
+                        tonick.append(t)
+                        has_nick = True
+            if has_nick:
+                pl = re.sub(tomatch, '', pl)
 
         data = {
             'fulldate': datetime.datetime.utcnow().isoformat(),
