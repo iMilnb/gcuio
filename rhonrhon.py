@@ -1,7 +1,5 @@
 #!/usr/bin/env python
  
-from __future__ import unicode_literals
-
 import irc.client
 import irc.bot
 import re
@@ -10,30 +8,32 @@ import json
 import requests
 from os.path import expanduser
 
-# inspired from
-# http://fr.wikibooks.org/wiki/D%C3%A9butez_dans_IRC/Cr%C3%A9er_un_robot
-# http://svn.red-bean.com/repos/ircbots/trunk/beanbot.py
+exec(open(expanduser("~") + '/.rhonrhonrc').read())
 
-execfile(expanduser("~") + '/.rhonrhonrc')
+class CustomLineBuffer(irc.client.LineBuffer):
+    def lines(self):
+        ld = []
+        for line in super(CustomLineBuffer, self).lines():
+            try:
+                ld.append(line.decode('utf-8', errors='strict'))
+            except UnicodeDecodeError:
+                ld.append(
+                    line.decode('iso-8859-15', errors='replace')
+                        .encode('utf-8')
+                        .decode('utf-8')
+                )
 
-# from http://code.activestate.com/recipes/466341-guaranteed-conversion-to-unicode-or-byte-string/
-def safe_unicode(obj, *args):
-    """ return the unicode representation of obj """
-    try:
-        return unicode(obj, *args)
-    except UnicodeDecodeError:
-        ascii_text = str(obj).decode('ISO-8859-15', errors='replace')
-        return unicode(ascii_text)
+        return iter(ld)
 
 class Bot(irc.bot.SingleServerIRCBot):
     def __init__(self):
         self.auth = []
-        irc.client.ServerConnection.buffer_class = irc.buffer.LineBuffer
+        irc.client.ServerConnection.buffer_class = CustomLineBuffer
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)],
                                            nickname, realname)
 
     def on_privnotice(self, serv, ev):
-        print "notice: {0}".format(ev.arguments[0])
+        print("notice: {0}".format(ev.arguments[0]))
         source = ev.source.nick
         if source and source.lower() == 'nickserv':
             if re.search(r'identify', ev.arguments[0], re.I):
@@ -43,30 +43,30 @@ class Bot(irc.bot.SingleServerIRCBot):
 
     def chanjoin(self, serv):
         for chan in channels:
-            print "joining {0}".format(chan)
+            print("joining {0}".format(chan))
             serv.join(chan)
 
     def on_kick(self, serv, ev):
         self.chanjoin(serv)
 
     def on_pubmsg(self, serv, ev):
-        pl = safe_unicode(ev.arguments[0]).encode('utf-8')
-        if (re.search(r'[\[#]\ *nolog\ *[#\]]', pl, re.I)):
+        pl = ev.arguments[0]
+        if (re.search('[\[#]\ *nolog\ *[#\]]', pl, re.I)):
             return
 
         tags = []
-        tagmatch = r'#\ *([^#]+)\ *#'
+        tagmatch = '#\ *([^#]+)\ *#'
         tagsub = re.search(tagmatch, pl)
         if tagsub:
             tags = tagsub.group(1).replace(' ', '').split(',')
             pl = re.sub(tagmatch, '', pl)
 
-        urls = re.findall(r'(https?://[^\s]+)', pl)
+        urls = re.findall('(https?://[^\s]+)', pl)
 
         tonick = []
-        tomatch = r'^\ *([^:]+)\ *:\ *'
+        tomatch = '^\ *([^:]+)\ *:\ *'
         tosub = re.search(tomatch, pl)
-        if tosub and not re.search(r'https?', tosub.group(1)):
+        if tosub and not re.search('https?', tosub.group(1)):
             tonick = tosub.group(1).replace(' ', '').split(',')
             pl = re.sub(tomatch, '', pl)
 
@@ -86,29 +86,29 @@ class Bot(irc.bot.SingleServerIRCBot):
             'line': pl
         }
         es_idx = "{0}/{1}/".format(es_url, channel)
-        print "dumping {0} to {1}".format(data, es_idx)
+        print("dumping {0} to {1}".format(data, es_idx))
         r = requests.post(es_idx, json.dumps(data))
-        print r.json()
+        print(r.json())
 
     def on_privmsg(self, serv, ev):
-        pl = safe_unicode(ev.arguments[0]).encode('utf-8')
+        pl = ev.arguments[0]
         s = pl.split(' ')
         if not ev.source.nick in auth.keys():
             return
-        if len(s) > 1 and s[0] == u'auth' and s[1] == auth[ev.source.nick]:
+        if len(s) > 1 and s[0] == 'auth' and s[1] == auth[ev.source.nick]:
             self.auth.append(ev.source.nick)
-            serv.notice(ev.source.nick, u'You are now authenticated')
+            serv.notice(ev.source.nick, 'You are now authenticated')
         if not ev.source.nick in self.auth:
             return
         self.do_cmd(serv, s)
 
     def do_cmd(self, serv, cmd):
-        print cmd
-        if cmd[0] == u'die':
-            self.die()
-        if cmd[0] == u'join' and cmd > 1:
+        print(cmd)
+        if cmd[0] == 'die':
+            self.die(quit_message)
+        if cmd[0] == 'join' and len(cmd) > 1:
             serv.join(cmd[1])
-        if cmd[0] == u'part' and cmd > 1:
+        if cmd[0] == 'part' and len(cmd) > 1:
             serv.part(cmd[1])
 
 if __name__ == "__main__":
