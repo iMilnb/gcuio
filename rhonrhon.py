@@ -17,12 +17,7 @@ class CustomLineBuffer(irc.client.LineBuffer):
             try:
                 ld.append(line.decode('utf-8', errors='strict'))
             except UnicodeDecodeError:
-                ld.append(
-                    line.decode('iso-8859-15', errors='replace')
-                        .encode('utf-8')
-                        .decode('utf-8')
-                )
-
+                ld.append(line.decode('iso-8859-15'))
         return iter(ld)
 
 class Bot(irc.bot.SingleServerIRCBot):
@@ -36,9 +31,9 @@ class Bot(irc.bot.SingleServerIRCBot):
         print("notice: {0}".format(ev.arguments[0]))
         source = ev.source.nick
         if source and source.lower() == 'nickserv':
-            if re.search(r'identify', ev.arguments[0], re.I):
+            if re.search('identify', ev.arguments[0], re.I):
                 self.connection.privmsg(source, 'identify {0}'.format(nickpass))
-            if re.search(r'identified', ev.arguments[0], re.I):
+            if re.search('identified', ev.arguments[0], re.I):
                 self.chanjoin(serv)
 
     def chanjoin(self, serv):
