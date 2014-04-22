@@ -17,7 +17,7 @@ class CustomLineBuffer(irc.client.LineBuffer):
             try:
                 ld.append(line.decode('utf-8', errors='strict'))
             except UnicodeDecodeError:
-                ld.append(line.decode('iso-8859-15'))
+                ld.append(line.decode('iso-8859-15', errors='replace'))
         return iter(ld)
 
 class Bot(irc.bot.SingleServerIRCBot):
@@ -88,7 +88,11 @@ class Bot(irc.bot.SingleServerIRCBot):
             'line': pl
         }
         es_idx = "{0}/{1}/".format(es_url, channel)
-        print("dumping {0} to {1}".format(data, es_idx))
+        try:
+            print("dumping {0} to {1}".format(data, es_idx))
+        except UnicodeEncodeError:
+            print("Your charset does not permit to dump that dataset.")
+
         r = requests.post(es_idx, json.dumps(data))
         print(r.json())
 
