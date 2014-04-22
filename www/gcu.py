@@ -16,9 +16,40 @@ ircline_style = {
     'tag': '<button type="button" class="btn btn-sm btn-warning">'
 }
 
+def _res_sort(res):
+    '''
+    Sort results given by ES using the 'sort' field
+    '''
+    return sorted(res['hits']['hits'], key=lambda getkey: getkey['sort'][0])
+
+@app.route('/get_url_last')
+def get_url_last():
+    '''
+    AJAX resource, retrieves latest records containing URLs
+
+    example: curl http://localhost:5000/get_url_last
+    '''
+    res = es.search(
+                index = es_idx,
+                doc_type = channel,
+                body = {'query':
+                            {'match': {'urls': 'http www'}},
+                            'sort': [{'fulldate': {'order': 'desc'}}],
+                        'size': nlines
+                       }
+            )
+    return json.dumps(_res_sort(res))
+
 @app.route('/get_irc_last', methods=["GET"])
 def get_irc_last():
+    '''
+    AJAX resource, retrieves latest IRC lines, or IRC since 'fromdate'
 
+    example:
+
+    curl http://localhost:5000/get_irc_last
+    curl http://localhost:5000/get_url_last?fromdate=2014-04-22T15:07:10.278682
+    '''
     fromdate = None
     if request.args.get('fromdate'):
         fromdate = request.args.get('fromdate')
@@ -34,9 +65,8 @@ def get_irc_last():
         s_body = {'size': nlines, 'sort': [{'fulldate': {'order': 'desc'}}]}
 
     res = es.search(index = es_idx, doc_type = channel, body = s_body)
-    res = sorted(res['hits']['hits'], key=lambda getkey: getkey['sort'][0])
 
-    return json.dumps(res)
+    return json.dumps(_res_sort(res))
 
 @app.route('/')
 def home():
