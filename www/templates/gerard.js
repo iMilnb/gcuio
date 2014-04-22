@@ -24,7 +24,6 @@ var process_ircline = function(data, lastdate) {
         /* real line */
         ircline += source['line'];
         /* tags */
-
         $.each(source.tags, function() {
             ircline += '{{ style["tag"] }}';
             ircline += this;
