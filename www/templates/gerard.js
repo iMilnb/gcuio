@@ -2,7 +2,7 @@
 {% block gerard %}
 var process_ircline = function(data, lastdate) {
     $.each(data, function() {
-        source = this['_source'];
+        source = this._source;
         /* do not refresh last line */
         if (source['fulldate'] == lastdate)
             return true
@@ -16,17 +16,18 @@ var process_ircline = function(data, lastdate) {
             ircline += '</button>';
         }
         /* destination nicks */
-        source['tonick'].forEach(function(nick) {
+        $.each(source.tonick, function() {
             ircline += '{{ style["tonick"] }}';
-            ircline += nick;
+            ircline += this;
             ircline += '</button>';
         });
         /* real line */
         ircline += source['line'];
         /* tags */
-        source['tags'].forEach(function(tag) {
+
+        $.each(source.tags, function() {
             ircline += '{{ style["tag"] }}';
-            ircline += tag;
+            ircline += this;
             ircline += '</button>';
         });
         ircline += '</div>';
