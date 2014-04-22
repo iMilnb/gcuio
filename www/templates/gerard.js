@@ -1,22 +1,23 @@
 {% extends "home.html" %}
 {% block gerard %}
 var process_ircline = function(data, lastdate) {
-    $.each(data, function(k) {
-        source = data[k]['_source'];
+    $.each(data, function() {
+        source = this['_source'];
         /* do not refresh last line */
         if (source['fulldate'] == lastdate)
             return true
         /* timestamp */
-        ircline = '<div class="ircline" id="' + source['fulldate'] + '">';
+        ircline = '<div class="{{ style["div"] }}" ';
+        ircline += 'id="' + source['fulldate'] + '">';
         /* source nick */
         if (source['nick'] != '') {
-            ircline += '<button type="button" class="btn btn-sm btn-success">';
+            ircline += '{{ style["nick"] }}';
             ircline += source['nick'];
             ircline += '</button>';
         }
         /* destination nicks */
         source['tonick'].forEach(function(nick) {
-            ircline += '<button type="button" class="btn btn-sm btn-info">';
+            ircline += '{{ style["tonick"] }}';
             ircline += nick;
             ircline += '</button>';
         });
@@ -24,7 +25,7 @@ var process_ircline = function(data, lastdate) {
         ircline += source['line'];
         /* tags */
         source['tags'].forEach(function(tag) {
-            ircline += '<button type="button" class="btn btn-sm btn-warning">';
+            ircline += '{{ style["tag"] }}';
             ircline += tag;
             ircline += '</button>';
         });

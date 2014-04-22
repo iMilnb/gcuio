@@ -9,6 +9,13 @@ nlines = 25
 es_idx = 'rhonrhon'
 channel = 'gcu'
 
+ircline_style = {
+    'div': 'ircline',
+    'nick': '<button type="button" class="btn btn-sm btn-success">',
+    'tonick': '<button type="button" class="btn btn-sm btn-info">',
+    'tag': '<button type="button" class="btn btn-sm btn-warning">'
+}
+
 @app.route('/get_irc_last', methods=["GET"])
 def get_irc_last():
 
@@ -34,7 +41,7 @@ def get_irc_last():
 @app.route('/')
 def home():
 
-    return render_template('gerard.js')
+    return render_template('gerard.js', style=ircline_style)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
