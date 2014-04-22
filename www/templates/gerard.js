@@ -1,6 +1,15 @@
 {% extends "home.html" %}
 {% import "jsmacros.html" as js %}
 {% block gerard %}
+
+var mkurl = function(source) {
+    var l = source.line;
+    $.each(source.urls, function() {
+        l = l.replace(this, '<a href="' + this + '">' + this + '</a>');
+    });
+    return l;
+}
+
 var process_ircline = function(data, lastdate) {
     $.each(data, function() {
         source = this._source;
@@ -16,7 +25,7 @@ var process_ircline = function(data, lastdate) {
         /* destination nicks */
         {{ js.buttonlst('tonick', ircline_style) }}
         /* real line */
-        ircline += source['line'];
+        ircline += mkurl(source);
         /* tags */
         {{ js.buttonlst('tags', ircline_style) }}
 
