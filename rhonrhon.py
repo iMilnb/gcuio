@@ -50,6 +50,7 @@ class Bot(irc.bot.SingleServerIRCBot):
             return
 
         date, clock = datetime.datetime.utcnow().isoformat().split('T')
+        clock = re.sub('\.[0-9]+', '', clock)
         channel = ev.target.replace('#', '')
 
         tags = []
