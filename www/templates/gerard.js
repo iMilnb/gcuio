@@ -1,4 +1,5 @@
 {% extends "home.html" %}
+{% import "jsmacros.html" as js %}
 {% block gerard %}
 var process_ircline = function(data, lastdate) {
     $.each(data, function() {
@@ -7,28 +8,18 @@ var process_ircline = function(data, lastdate) {
         if (source['fulldate'] == lastdate)
             return true
         /* timestamp */
-        ircline = '<div class="{{ style["div"] }}" ';
+        ircline = '<div class="{{ ircline_style["div"] }}" ';
         ircline += 'id="' + source['fulldate'] + '">';
-        /* source nick */
-        if (source['nick'] != '') {
-            ircline += '{{ style["nick"] }}';
-            ircline += source['nick'];
-            ircline += '</button>';
-        }
+
+        {{ js.button('time', ircline_style) }}
+        {{ js.button('nick', ircline_style) }}
         /* destination nicks */
-        $.each(source.tonick, function() {
-            ircline += '{{ style["tonick"] }}';
-            ircline += this;
-            ircline += '</button>';
-        });
+        {{ js.buttonlst('tonick', ircline_style) }}
         /* real line */
         ircline += source['line'];
         /* tags */
-        $.each(source.tags, function() {
-            ircline += '{{ style["tag"] }}';
-            ircline += this;
-            ircline += '</button>';
-        });
+        {{ js.buttonlst('tags', ircline_style) }}
+
         ircline += '</div>';
 
         $('#irclive').append(ircline);

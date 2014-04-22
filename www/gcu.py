@@ -11,9 +11,10 @@ channel = 'gcu'
 
 ircline_style = {
     'div': 'ircline',
-    'nick': '<button type="button" class="btn btn-sm btn-success">',
-    'tonick': '<button type="button" class="btn btn-sm btn-info">',
-    'tag': '<button type="button" class="btn btn-sm btn-warning">'
+    'time': 'btn btn-sm btn-default',
+    'nick': 'btn btn-sm btn-success',
+    'tonick': 'btn btn-sm btn-info',
+    'tags': 'btn btn-sm btn-warning'
 }
 
 def _res_sort(res):
@@ -71,7 +72,7 @@ def get_irc_last():
 @app.route('/')
 def home():
 
-    return render_template('gerard.js', style=ircline_style)
+    return render_template('gerard.js', ircline_style=ircline_style)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
