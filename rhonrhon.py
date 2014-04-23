@@ -1,11 +1,15 @@
 #!/usr/bin/env python
- 
+
 import irc.client
 import irc.bot
 import re
 import datetime
 import json
 import requests
+import getopt
+import sys
+import socket
+import thread
 from os.path import expanduser
 
 exec(open(expanduser("~") + '/.rhonrhonrc').read())
@@ -23,6 +27,11 @@ class CustomLineBuffer(irc.client.LineBuffer):
 class Bot(irc.bot.SingleServerIRCBot):
     def __init__(self):
         self.auth = []
+
+        if listen_port > 0:
+            print "Creating listening socket on 127.0.0.1:{0} to get fed !".format(listen_port)
+            server_thread = thread.start_new_thread(self.create_server_socket, (int(listen_port),))
+
         irc.client.ServerConnection.buffer_class = CustomLineBuffer
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)],
                                            nickname, realname)
@@ -45,13 +54,33 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.chanjoin(serv)
 
     def on_pubmsg(self, serv, ev):
-        pl = ev.arguments[0]
+        self._handle_on_pubmsg(serv.server, ev.source.nick, ev.target, datetime.datetime.utcnow().isoformat(), ev.arguments[0])
+
+    def _handle_on_pubmsg(self, serv, nick, target, full_date, pl):
+        """Handle on_pubmsg event.
+
+        Arguments:
+
+            serv  -- The server from which we received the event
+
+            nick  -- The nick of the sender
+
+            target -- Receiver of the message
+
+            full_date -- The date when the message was received
+
+            pl  -- Content of the message
+
+        This method should be called to handle a pub_msg received from
+        a real IRC server or from a client socket
+        """
+
         if (re.search('[\[#]\ *nolog\ *[#\]]', pl, re.I)):
             return
 
-        date, clock = datetime.datetime.utcnow().isoformat().split('T')
+        date, clock = full_date.split('T')
         clock = re.sub('\.[0-9]+', '', clock)
-        channel = ev.target.replace('#', '')
+        channel = target.replace('#', '')
 
         tags = []
         tagmatch = '#\ *([^#]+)\ *#'
@@ -76,12 +105,12 @@ class Bot(irc.bot.SingleServerIRCBot):
                 pl = re.sub(tomatch, '', pl)
 
         data = {
-            'fulldate': datetime.datetime.utcnow().isoformat(),
+            'fulldate': full_date,
             'date': date,
             'time': clock,
             'channel': channel,
-            'server': serv.server,
-            'nick': ev.source.nick,
+            'server': serv,
+            'nick': nick,
             'tonick': tonick,
             'tags': tags,
             'urls': urls,
@@ -117,5 +146,38 @@ class Bot(irc.bot.SingleServerIRCBot):
         if cmd[0] == 'part' and len(cmd) > 1:
             serv.part(cmd[1])
 
+    def create_server_socket(self, listen_port):
+        self.serv_socket = socket.socket(
+                socket.AF_INET, socket.SOCK_STREAM)
+        self.serv_socket.bind(('127.0.0.1', listen_port))
+        self.serv_socket.listen(1)
+        #TODO: handle multiple clients at a time
+        self.readIRCFeed()
+
+    def readIRCFeed(self):
+        (client_socket, address) = self.serv_socket.accept()
+        try:
+            data = client_socket.recv(1024)
+            while len(data) > 0:
+                data = data.rstrip('\n')
+                print "data=({0})".format(data)
+                self._handle_on_pubmsg(server, 'nick_test', '#gcu', datetime.datetime.utcnow().isoformat(), data)
+                data = client_socket.recv(1024)
+        except socket.error, e:
+            sys.exit(0)
+        finally:
+            self.serv_socket.close()
+
 if __name__ == "__main__":
+    listen_port = 0
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'c:hl:s:')
+    except getopt.GetoptError:
+        Bot().start()
+    for opt, arg in opts:
+        if opt == '-h':
+            print "{0} -h [ -l 1337 ]".format(sys.argv[0])
+            sys.exit()
+        elif opt == "-l":
+            listen_port = arg
     Bot().start()
