@@ -6,9 +6,12 @@ import re
 import datetime
 import json
 import requests
+from elasticsearch import Elasticsearch
 from os.path import expanduser
 
 exec(open(expanduser("~") + '/.rhonrhonrc').read())
+
+es = Elasticsearch(es_nodes)
 
 class CustomLineBuffer(irc.client.LineBuffer):
     def lines(self):
@@ -54,7 +57,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         channel = ev.target.replace('#', '')
 
         tags = []
-        tagmatch = '#\ *([^#]+)\ *#'
+        tagmatch = '\ #\ *([^#]+)\ *#\s*'
         tagsub = re.search(tagmatch, pl)
         if tagsub:
             tags = tagsub.group(1).replace(' ', '').split(',')
@@ -87,14 +90,13 @@ class Bot(irc.bot.SingleServerIRCBot):
             'urls': urls,
             'line': pl
         }
-        es_idx = "{0}/{1}/".format(es_url, channel)
         try:
-            print("dumping {0} to {1}".format(data, es_idx))
+            print("dumping {0} to {1}/{2}".format(data, es_idx, channel))
         except UnicodeEncodeError:
             print("Your charset does not permit to dump that dataset.")
 
-        r = requests.post(es_idx, json.dumps(data))
-        print(r.json())
+        r = es.index(index=es_idx, doc_type=channel, body=json.dumps(data))
+        print(r)
 
     def on_privmsg(self, serv, ev):
         pl = ev.arguments[0]

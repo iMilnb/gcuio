@@ -1,0 +1,21 @@
+body {
+    padding-top: 70px;
+}
+html, body {
+    height: 100%;
+}
+.fullheight {
+    height: 100%;
+}
+.irclive {
+    padding: 5px;
+    height: 90%;
+    overflow: auto;
+    font-family: monospace;
+}
+.line {
+    margin-left: 5px;
+}
+.tags {
+    margin-left: 5px;
+}

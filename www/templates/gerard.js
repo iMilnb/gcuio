@@ -5,9 +5,10 @@
 var mkurl = function(source) {
     var l = source.line;
     $.each(source.urls, function() {
-        l = l.replace(this, '<a href="' + this + '">' + this + '</a>');
+        var r = '<kbd><a href="' + this + '">' + this + '</a></kbd>';
+        l = l.replace(this, r);
     });
-    return l;
+    return '<span class="line">' + l + '</span>';
 }
 
 var process_ircline = function(data, lastdate) {
@@ -17,7 +18,7 @@ var process_ircline = function(data, lastdate) {
         if (source['fulldate'] == lastdate)
             return true
         /* timestamp */
-        ircline = '<div class="{{ ircline_style["div"] }}" ';
+        var ircline = '<div class="small ircline {{ ircline_style["div"] }}" ';
         ircline += 'id="' + source['fulldate'] + '">';
 
         {{ js.button('time', ircline_style) }}
@@ -31,12 +32,13 @@ var process_ircline = function(data, lastdate) {
 
         ircline += '</div>';
 
-        $('#irclive').append(ircline);
+        $('.irclive').append(ircline);
     });
 }
 
 var _getjson = function() {
-    var lastdate = $('.ircline').last().attr('id');
+    var irclive = $('.irclive') /* full IRC div */
+    var lastdate = $('.ircline').last().attr('id'); /* last IRC line */
     if (!lastdate) /* first call */
         lastdate = '';
     var irc_last = '{{ url_for("get_irc_last") }}?fromdate=' + lastdate;
@@ -44,6 +46,8 @@ var _getjson = function() {
     $.getJSON(irc_last, function(data) {
         process_ircline(data, lastdate);
     });
+
+    irclive[0].scrollTop = irclive[0].scrollHeight; /* auto scroll to bottom */
 }
 
 $(function() {
@@ -51,6 +55,7 @@ $(function() {
 
     var auto_refresh = setInterval(function() {
         _getjson();
+
     }, 5000);
 
 });

@@ -1,10 +1,22 @@
 {% extends "layout.html" %}
 {% block body %}
- <script type="text/javascript">
-{% block gerard %}{% endblock %}
-</script>
 
-<div id="irclive">
+<div class="container fullheight">
+  <div class="row fullheight">
+    <div class="col-xs-12 col-md-8 fullheight">
+      <h4>IRC Live <small>#gcu, maintenant.</small></h4>
+      <div class="well well-sm irclive">
+      </div>
+    </div>
+    <div class="col-xs-12 col-md-4 fullheight">
+      <h4>Links of the day <small>URLs pas forcemment
+      <a href="http://fr.wikipedia.org/wiki/Not_Safe_for_Work">NSFW</a>
+      </h4></small>
+      <div class="well well-sm lotd">
+      foo
+      </div>
+    </div>
+  </div>
 </div>
 
 {% endblock %}
