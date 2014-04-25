@@ -2,8 +2,12 @@
 {% import "jsmacros.html" as js %}
 {% block gerard %}
 
+var escape_html = function(data) {
+    return data.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 var mkurl = function(source) {
-    var l = source.line;
+    var l = escape_html(source.line);
     $.each(source.urls, function() {
         var r = '<kbd><a href="' + this + '">' + this + '</a></kbd>';
         l = l.replace(this, r);

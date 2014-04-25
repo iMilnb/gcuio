@@ -2,7 +2,7 @@
 if (source['{{ name }}'] != '') {
     ircline += '<span class="{{ name }}">'
     ircline += '<button type="button" class="{{ style[name] }}">'
-    ircline += source['{{ name }}']
+    ircline += escape_html(source['{{ name }}'])
     ircline += '</button>'
     ircline += '</span>'
 }
@@ -12,7 +12,7 @@ if (source['{{ name }}'] != '') {
 ircline += '<span class="{{ name }}">'
 $.each(source.{{ name }}, function() {
     ircline += '<button type="button" class="{{ style[name] }}">';
-    ircline += this;
+    ircline += escape_html(this);
     ircline += '</button>';
 });
 ircline += '</span>';
