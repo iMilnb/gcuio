@@ -9,17 +9,18 @@ var escape_html = function(data) {
 var mkurl = function(source) {
     var l = escape_html(source.line);
     $.each(source.urls, function() {
-        var r = '<kbd><a href="' + this + '">' + this + '</a></kbd>';
+        var r = '<kbd><a href="' + this + '" target="_blank">'
+        r += this + '</a></kbd>';
         l = l.replace(this, r);
     });
     return l;
 }
 
-var process_ircline = function(data, lastdate) {
+var process_ircline = function(data, lastdate, cnt) {
     $.each(data, function() {
         source = this._source;
         /* do not refresh last line */
-        if (source['fulldate'] == lastdate)
+        if (lastdate && source['fulldate'] == lastdate)
             return true
         /* timestamp */
         var ircline = '<div ';
@@ -35,28 +36,35 @@ var process_ircline = function(data, lastdate) {
         /* real line */
         ircline += '<span class="line">' + mkurl(source) + '</span>';
         /* tags */
-        {{ js.buttonlst('tags', ircline_style) }}
+        {{ js.buttonlst('tags', ircline_style, 'tag') }}
 
         ircline += '</div>';
 
-        $('.irclive').append(ircline);
+        $(cnt).append(ircline);
     });
 }
 
-var process_urlline = function(data, lastdate) {
+var process_urlline = function(data, lastdate, cnt) {
     $.each(data, function() {
         source = this._source;
-        if (source['fulldate'] == lastdate)
+        if (lastdate && source['fulldate'] == lastdate)
             return true
         var urlline = '';
         var urldate = source.fulldate;
+        var ircline = source.line;
         $.each(source.urls, function() {
             urlline += '<div class="small list-group-item urlline" ';
-            urlline += 'id="' + urldate + '">'
-            urlline += '<a href="' + this + '">' + this + '</a>';
+            urlline += 'id="' + urldate + '">';
+            urlline += '<a href="' + this + '" target="_blank" ';
+            urlline += 'data-content="' + ircline + '" ';
+            urlline += 'data-placement="left" ';
+            urlline += 'data-container="body" ';
+            urlline += 'data-toggle="popover">';
+            urlline += this + '</a>';
             urlline += '</div>';
+            console.log(urlline);
         });
-        $('.urllive').append(urlline);
+        $(cnt).append(urlline);
     });
     
 }
@@ -71,20 +79,28 @@ var _getjson = function(t) {
     var fn =  window['process_' + t + 'line'];
     $.getJSON(get_last, function(data) {
         if (typeof fn === "function")
-            fn(data, lastdate);
+            fn(data, lastdate, '.' + t + 'live');
     });
 
     live.prop({ scrollTop: live.prop("scrollHeight") });
 }
 
-$(function() {
+var _refresh = function() {
     _getjson('irc');
     _getjson('url');
 
-    var auto_refresh = setInterval(function() {
-        _getjson('irc');
-        _getjson('url');
+    $('[data-toggle="popover"]').popover({trigger: 'hover'});
+}
 
+$(function() {
+    $.ajaxSetup({
+        async: false
+    });
+
+    _refresh();
+
+    var auto_refresh = setInterval(function() {
+        _refresh();
     }, 5000);
 
 });

@@ -25,3 +25,8 @@ html, body {
     overflow: auto;
     font-family: monospace;
 }
+
+footer {
+    background: #222;
+    padding: 10px 5px;
+}
