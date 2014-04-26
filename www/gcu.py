@@ -1,5 +1,5 @@
 import json
-from flask import Flask, render_template, request, url_for
+from flask import Flask, render_template, request, url_for, jsonify
 from elasticsearch import Elasticsearch
 
 app = Flask(__name__)
@@ -23,47 +23,51 @@ def _res_sort(res):
     '''
     return sorted(res['hits']['hits'], key=lambda getkey: getkey['sort'][0])
 
-@app.route('/get_url_last')
-def get_url_last():
-    '''
-    AJAX resource, retrieves latest records containing URLs
+def _get_body(t, d):
+    fd = ''
+    if d:
+        fd = '_fromdate'
 
-    example: curl http://localhost:5000/get_url_last
-    '''
-    res = es.search(
-                index = es_idx,
-                doc_type = channel,
-                body = {'query':
-                            {'match': {'urls': 'http www'}},
-                            'sort': [{'fulldate': {'order': 'desc'}}],
-                        'size': nlines
+    ircbody = {'size': nlines, 'sort': [{'fulldate': {'order': 'desc'}}]}
+    ircbody_fromdate = {'query': 
+                        {'range': {'fulldate': {'from': d }}},
+                        'sort': [{'fulldate': {'order': 'desc'}}]
                        }
-            )
-    return json.dumps(_res_sort(res))
+    urlbody = {'query':
+                {'match': {'urls': 'http www'}},
+                'sort': [{'fulldate': {'order': 'desc'}}],
+                'size': nlines
+              }
+    urlbody_fromdate = {
+                        'query': {
+                            'bool': {
+                                'must': [
+                                    {'match': {'urls': 'http www'}},
+                                    {'range': {'fulldate': {'from': d }}},
+                                ],
+                            },
+                        },
+                        'sort': [{'fulldate': {'order': 'desc'}}],
+                        'size': nlines,
+                       }
 
-@app.route('/get_irc_last', methods=["GET"])
-def get_irc_last():
+    return locals()['{0}body{1}'.format(t, fd)]
+
+@app.route('/get_last', methods=["GET"])
+def get_last():
     '''
-    AJAX resource, retrieves latest IRC lines, or IRC since 'fromdate'
+    AJAX resource, retrieves latest type lines, or since 'fromdate'
 
     example:
 
-    curl http://localhost:5000/get_irc_last
-    curl http://localhost:5000/get_url_last?fromdate=2014-04-22T15:07:10.278682
+    curl http://localhost:5000/get_last?t=irc
+    curl http://localhost:5000/get_last?t=url&d=2014-04-22T15:07:10.278682
     '''
-    fromdate = None
-    if request.args.get('fromdate'):
-        fromdate = request.args.get('fromdate')
-        s_body = {'query': 
-                    {'range':
-                        {'fulldate':
-                            {'from': fromdate }
-                        }
-                    },
-                  'sort': [{'fulldate': {'order': 'desc'}}]
-                 }
-    else:
-        s_body = {'size': nlines, 'sort': [{'fulldate': {'order': 'desc'}}]}
+
+    if not request.args.get('t'):
+        return json.dumps({})
+
+    s_body = _get_body(request.args.get('t'), request.args.get('d'))
 
     res = es.search(index = es_idx, doc_type = channel, body = s_body)
 

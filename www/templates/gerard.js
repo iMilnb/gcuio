@@ -12,7 +12,7 @@ var mkurl = function(source) {
         var r = '<kbd><a href="' + this + '">' + this + '</a></kbd>';
         l = l.replace(this, r);
     });
-    return '<span class="line">' + l + '</span>';
+    return l;
 }
 
 var process_ircline = function(data, lastdate) {
@@ -22,7 +22,8 @@ var process_ircline = function(data, lastdate) {
         if (source['fulldate'] == lastdate)
             return true
         /* timestamp */
-        var ircline = '<div class="small ircline {{ ircline_style["div"] }}" ';
+        var ircline = '<div ';
+        ircline += 'class="small {{ ircline_style["div"] }}" ';
         ircline += 'id="' + source['fulldate'] + '">';
 
         {{ js.button('time', ircline_style) }}
@@ -30,7 +31,7 @@ var process_ircline = function(data, lastdate) {
         /* destination nicks */
         {{ js.buttonlst('tonick', ircline_style) }}
         /* real line */
-        ircline += mkurl(source);
+        ircline += '<span class="line">' + mkurl(source) + '</span>';
         /* tags */
         {{ js.buttonlst('tags', ircline_style) }}
 
@@ -40,25 +41,46 @@ var process_ircline = function(data, lastdate) {
     });
 }
 
-var _getjson = function() {
-    var irclive = $('.irclive') /* full IRC div */
-    var lastdate = $('.ircline').last().attr('id'); /* last IRC line */
+var process_urlline = function(data, lastdate) {
+    $.each(data, function() {
+        source = this._source;
+        if (source['fulldate'] == lastdate)
+            return true
+        var urlline = '';
+        $.each(source.urls, function() {
+            urlline += '<div class="small list-group-item url">';
+            urlline += '<a href="' + this + '">' + this + '</a>';
+            urlline += '</div>';
+        });
+        $('.urllive').append(urlline);
+    });
+    
+}
+
+var _getjson = function(t) {
+    var live = $('.' + t + 'live'); /* full div */
+    var lastdate = $('.' + t + 'line').last().attr('id');
     if (!lastdate) /* first call */
         lastdate = '';
-    var irc_last = '{{ url_for("get_irc_last") }}?fromdate=' + lastdate;
+    var get_last = '{{ url_for("get_last") }}?t=' + t + '&d=' + lastdate;
 
-    $.getJSON(irc_last, function(data) {
-        process_ircline(data, lastdate);
+    $.getJSON(get_last, function(data) {
+        if (t == 'irc')
+            process_ircline(data, lastdate);
+        if (t == 'url')
+            process_urlline(data, lastdate);
     });
 
-    irclive[0].scrollTop = irclive[0].scrollHeight; /* auto scroll to bottom */
+    live.prop({ scrollTop: live.prop("scrollHeight") });
 }
 
 $(function() {
-    _getjson();
+    _getjson('irc');
+    _getjson('url');
 
     var auto_refresh = setInterval(function() {
-        _getjson();
+        _getjson('irc');
+        _getjson('url');
 
     }, 5000);
 

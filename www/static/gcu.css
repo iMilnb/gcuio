@@ -19,3 +19,9 @@ html, body {
 .tags {
     margin-left: 5px;
 }
+
+.urllive {
+    height: 90%;
+    overflow: auto;
+    font-family: monospace;
+}
