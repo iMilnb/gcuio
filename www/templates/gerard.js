@@ -28,6 +28,8 @@ var process_ircline = function(data, lastdate) {
 
         {{ js.button('time', ircline_style) }}
         {{ js.button('nick', ircline_style) }}
+        if (source.tonick[0])
+            ircline += '<span class="glyphicon glyphicon-chevron-right"></span>';
         /* destination nicks */
         {{ js.buttonlst('tonick', ircline_style) }}
         /* real line */
@@ -47,8 +49,10 @@ var process_urlline = function(data, lastdate) {
         if (source['fulldate'] == lastdate)
             return true
         var urlline = '';
+        var urldate = source.fulldate;
         $.each(source.urls, function() {
-            urlline += '<div class="small list-group-item url">';
+            urlline += '<div class="small list-group-item urlline" ';
+            urlline += 'id="' + urldate + '">'
             urlline += '<a href="' + this + '">' + this + '</a>';
             urlline += '</div>';
         });

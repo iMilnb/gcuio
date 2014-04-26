@@ -1,4 +1,5 @@
 import json
+import os
 from flask import Flask, render_template, request, url_for, jsonify
 from elasticsearch import Elasticsearch
 
@@ -72,6 +73,10 @@ def get_last():
     res = es.search(index = es_idx, doc_type = channel, body = s_body)
 
     return json.dumps(_res_sort(res))
+
+@app.route('/fonts/<path:filename>')
+def fonts(filename):
+    return app.send_static_file(os.path.join('fonts', filename))
 
 @app.route('/')
 def home():
