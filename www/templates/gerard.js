@@ -64,11 +64,10 @@ var _getjson = function(t) {
         lastdate = '';
     var get_last = '{{ url_for("get_last") }}?t=' + t + '&d=' + lastdate;
 
+    var fn =  window['process_' + t + 'line'];
     $.getJSON(get_last, function(data) {
-        if (t == 'irc')
-            process_ircline(data, lastdate);
-        if (t == 'url')
-            process_urlline(data, lastdate);
+        if (typeof fn === "function")
+            fn(data, lastdate);
     });
 
     live.prop({ scrollTop: live.prop("scrollHeight") });
