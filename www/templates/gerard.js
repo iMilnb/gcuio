@@ -99,7 +99,7 @@ var process_urlline = function(data, lastdate, cnt) {
                     });
                 }
                 urlline += '" ';
-                urlline += 'data-placement="left" ';
+                urlline += 'data-placement="auto" ';
                 urlline += 'data-container="body" ';
                 urlline += 'data-toggle="popover"';
             }
