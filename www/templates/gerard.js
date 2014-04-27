@@ -6,24 +6,31 @@ var escape_html = function(data) {
     return data.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-var rabbitify = function(url) {
-    if (url.match(/\.(jpe?g|gif|png|bmp)$/)) {
-        var img = '<img src=\'' + url + '\' width=\'200\'>';
-        var data = 'data-toggle="popover" data-content="' + img + '" ';
-        data += 'data-placement="auto"';
-        return data;
-    }
-    return '';
+var _isimg = function(url) {
+    if (url.match(/\.(jpe?g|gif|png|bmp)$/i))
+        return true
+    return false
 }
 
-var mkurl = function(source) {
-    var l = escape_html(source.line);
+var rabbitify = function(url) {
+    var img = '<img src=\'' + url + '\' width=\'200\'>';
+    var data = 'data-toggle="popover" data-content="' + img + '" ';
+    data += 'data-placement="auto"';
+    return data;
+}
+/* replaces line URLs with clickable links and apply minimal markdown*/
+var decoline = function(source) {
+    /* minimal markdown */
+    var l = minimd(escape_html(source.line));
+    /* foreach URLs in line, make them a href */
     $.each(source.urls, function() {
         var eurl = encodeURI(this);
-        var r = '<kbd><a href="' + eurl + '" target="_blank"';
-        r += rabbitify(eurl) + '>'
-        r += eurl + '</a></kbd>';
-        l = l.replace(this, r);
+        var res = '<kbd><a href="' + eurl + '" target="_blank"';
+        /* if it is an image, make it a popover */
+        if (_isimg(eurl))
+            res += rabbitify(eurl)
+        res += '>' + eurl + '</a></kbd>';
+        l = l.replace(this, res);
     });
     return l;
 }
@@ -54,7 +61,7 @@ var process_ircline = function(data, lastdate, cnt) {
         /* destination nicks */
         {{ js.buttonlst('tonick', ircline_style) }}
         /* real line */
-        ircline += '<span class="line">' + minimd(mkurl(source)) + '</span>';
+        ircline += '<span class="line">' + decoline(source) + '</span>';
         /* tags */
         {{ js.buttonlst('tags', ircline_style, 'tag') }}
 
@@ -71,11 +78,13 @@ var process_urlline = function(data, lastdate, cnt) {
             return true
         var urlline = '';
         $.each(source.urls, function() {
+            var eurl = escape_html(this);
             urlline += '<div class="small list-group-item urlline" ';
             urlline += 'id="' + source.fulldate + '">';
-            urlline += '<a href="' + escape_html(this) + '" target="_blank" ';
-            var imgdata = rabbitify(this);
-            if (imgdata == '') {
+            urlline += '<a href="' + eurl + '" target="_blank" ';
+            if (_isimg(eurl)) {
+                urlline += rabbitify(this);
+            } else {
                 urlline += 'data-content="[' + source.time + '] ';
                 urlline += '<' + escape_html(source.nick) + '> ';
                 urlline +=  escape_html(source.line) + ' ';
@@ -88,8 +97,8 @@ var process_urlline = function(data, lastdate, cnt) {
                 urlline += 'data-placement="left" ';
                 urlline += 'data-container="body" ';
                 urlline += 'data-toggle="popover"';
-            } else
-                urlline += imgdata;
+            }
+            /* what is actually shown in LotD div */
             urlline += '><span class="glyphicon glyphicon-globe"></span> ';
             urlline += escape_html(this).replace(/https?:\/\//,'') + '</a>';
             urlline += '</div>';
