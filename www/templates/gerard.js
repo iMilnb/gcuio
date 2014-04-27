@@ -16,6 +16,14 @@ var mkurl = function(source) {
     return l;
 }
 
+var minimd = function(str) {
+    var s = str.replace(/`(.+?)`/g, '<code>$1</code>');
+    s = s.replace(/_(.+?)_/g, '<em>$1</em>');
+    s = s.replace(/\*(.+?)\*/g, '<strong>$1</strong>');
+
+    return s;
+}
+
 var process_ircline = function(data, lastdate, cnt) {
     $.each(data, function() {
         source = this._source;
@@ -34,7 +42,7 @@ var process_ircline = function(data, lastdate, cnt) {
         /* destination nicks */
         {{ js.buttonlst('tonick', ircline_style) }}
         /* real line */
-        ircline += '<span class="line">' + mkurl(source) + '</span>';
+        ircline += '<span class="line">' + minimd(mkurl(source)) + '</span>';
         /* tags */
         {{ js.buttonlst('tags', ircline_style, 'tag') }}
 
@@ -110,6 +118,10 @@ var _async_ajax = function(b) {
     $.ajaxSetup({
         async: b
     });
+}
+
+var modal_display = function() {
+    $('#searchModal').modal();
 }
 
 $(function() {

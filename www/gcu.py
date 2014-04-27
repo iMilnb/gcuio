@@ -54,7 +54,7 @@ def _get_body(t, d):
 
     return locals()['{0}body{1}'.format(t, fd)]
 
-@app.route('/get_last', methods=["GET"])
+@app.route('/get_last', methods=['GET'])
 def get_last():
     '''
     AJAX resource, retrieves latest type lines, or since 'fromdate'
@@ -73,6 +73,25 @@ def get_last():
     res = es.search(index = es_idx, doc_type = channel, body = s_body)
 
     return json.dumps(_res_sort(res))
+
+@app.route('/search', methods=['GET'])
+def search():
+    if not request.args.get('k') or not request.args.get('v'):
+        return json.dumps({})
+
+    key = request.args.get('k')
+    vals = ' '.join(request.args.get('v').split(','))
+
+    s_body = {'query':
+                {'match': {key: {'query': vals, "operator": "and"}}},
+                'sort': [{'fulldate': {'order': 'desc'}}],
+                'size': nlines
+              }
+    print(s_body)
+    return json.dumps(es.search(
+                        index = es_idx, doc_type = channel, body = s_body)
+                    )
+
 
 @app.route('/fonts/<path:filename>')
 def fonts(filename):
