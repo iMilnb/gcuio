@@ -1,5 +1,5 @@
 {% macro button(name, style) %}
-if (source['{{ name }}'] != '') {
+if (source.{{ name }} != '') {
     ircline += '<span class="{{ name }}">';
     ircline += '<a href="#" ';
     ircline += 'onclick="modal_display(';
@@ -7,8 +7,8 @@ if (source['{{ name }}'] != '') {
     ircline += '); return false;" ';
     ircline += 'role="button" class="{{ style[name] }}">';
     ircline += escape_html(source['{{ name }}']);
-    ircline += '</button>';
     ircline += '</a>';
+    ircline += '</span>';
 }
 {%- endmacro %}
 

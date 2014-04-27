@@ -40,3 +40,7 @@ footer {
 .popover.left .arrow:after {
     border-left-color: #222;
 }
+
+.modal-body {
+    font-family: monospace;
+}

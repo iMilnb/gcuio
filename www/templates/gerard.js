@@ -6,11 +6,23 @@ var escape_html = function(data) {
     return data.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+var rabbitify = function(url) {
+    if (url.match(/\.(jpe?g|gif|png|bmp)$/)) {
+        var img = '<img src=\'' + url + '\' width=\'200\'>';
+        var data = 'data-toggle="popover" data-content="' + img + '" ';
+        data += 'data-placement="auto"';
+        return data;
+    }
+    return '';
+}
+
 var mkurl = function(source) {
     var l = escape_html(source.line);
     $.each(source.urls, function() {
-        var r = '<kbd><a href="' + this + '" target="_blank">'
-        r += this + '</a></kbd>';
+        var eurl = encodeURI(this);
+        var r = '<kbd><a href="' + eurl + '" target="_blank"';
+        r += rabbitify(eurl) + '>'
+        r += eurl + '</a></kbd>';
         l = l.replace(this, r);
     });
     return l;
@@ -62,19 +74,23 @@ var process_urlline = function(data, lastdate, cnt) {
             urlline += '<div class="small list-group-item urlline" ';
             urlline += 'id="' + source.fulldate + '">';
             urlline += '<a href="' + escape_html(this) + '" target="_blank" ';
-            urlline += 'data-content="[' + source.time + '] ';
-            urlline += '<' + escape_html(source.nick) + '> ';
-            urlline +=  escape_html(source.line) + ' ';
-            if (source.tags.length > 0) {
-                $.each(source.tags, function() {
-                    urlline += '&#9873; ' + escape_html(this) + ' ';
-                });
-            }
-            urlline += '" ';
-            urlline += 'data-placement="left" ';
-            urlline += 'data-container="body" ';
-            urlline += 'data-toggle="popover">';
-            urlline += '<span class="glyphicon glyphicon-globe"></span> ';
+            var imgdata = rabbitify(this);
+            if (imgdata == '') {
+                urlline += 'data-content="[' + source.time + '] ';
+                urlline += '<' + escape_html(source.nick) + '> ';
+                urlline +=  escape_html(source.line) + ' ';
+                if (source.tags.length > 0) {
+                    $.each(source.tags, function() {
+                        urlline += '&#9873; ' + escape_html(this) + ' ';
+                    });
+                }
+                urlline += '" ';
+                urlline += 'data-placement="left" ';
+                urlline += 'data-container="body" ';
+                urlline += 'data-toggle="popover"';
+            } else
+                urlline += imgdata;
+            urlline += '><span class="glyphicon glyphicon-globe"></span> ';
             urlline += escape_html(this).replace(/https?:\/\//,'') + '</a>';
             urlline += '</div>';
         });
@@ -120,7 +136,7 @@ var _refresh = function() {
     _getjson('irc');
     _getjson('url');
 
-    $('[data-toggle="popover"]').popover({trigger: 'hover'});
+    $('[data-toggle="popover"]').popover({trigger: 'hover', html: true});
 }
 
 var _async_ajax = function(b) {
@@ -134,6 +150,13 @@ $(function() {
     _async_ajax(false)
 
     _refresh();
+
+    var search = $('input[class="form-control"]');
+    search.keypress(function(event) {
+        if (event.which == 13) {
+            modal_display('line', search.val().replace(/ +/g, ','));
+        };
+    });
 
     var auto_refresh = setInterval(function() {
         _refresh();
