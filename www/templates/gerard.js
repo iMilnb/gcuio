@@ -53,17 +53,22 @@ var process_urlline = function(data, lastdate, cnt) {
         $.each(source.urls, function() {
             urlline += '<div class="small list-group-item urlline" ';
             urlline += 'id="' + source.fulldate + '">';
-            urlline += '<a href="' + this + '" target="_blank" ';
+            urlline += '<a href="' + escape_html(this) + '" target="_blank" ';
             urlline += 'data-content="[' + source.time + '] ';
-            urlline += '<' + source.nick + '> ';
-            urlline +=  source.line + '" ';
+            urlline += '<' + escape_html(source.nick) + '> ';
+            urlline +=  escape_html(source.line) + ' ';
+            if (source.tags.length > 0) {
+                $.each(source.tags, function() {
+                    urlline += '&#9873; ' + escape_html(this) + ' ';
+                });
+            }
+            urlline += '" ';
             urlline += 'data-placement="left" ';
             urlline += 'data-container="body" ';
             urlline += 'data-toggle="popover">';
             urlline += '<span class="glyphicon glyphicon-globe"></span> ';
-            urlline += this + '</a>';
+            urlline += escape_html(this).replace(/https?:\/\//,'') + '</a>';
             urlline += '</div>';
-            console.log(urlline);
         });
         $(cnt).append(urlline);
     });
