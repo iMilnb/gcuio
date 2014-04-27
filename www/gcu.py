@@ -95,6 +95,11 @@ def search():
 def fonts(filename):
     return app.send_static_file(os.path.join('fonts', filename))
 
+@app.route('/images/<path:filename>')
+def images(filename):
+    print(os.path.join('images', filename))
+    return app.send_static_file(os.path.join('images', filename))
+
 @app.route('/')
 def home():
 

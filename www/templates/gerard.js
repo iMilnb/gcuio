@@ -78,12 +78,12 @@ var process_urlline = function(data, lastdate, cnt) {
             return true
         var urlline = '';
         $.each(source.urls, function() {
-            var eurl = escape_html(this);
+            var eurl = escape_html(this).replace(/[^a-z0-9]$/, '');
             urlline += '<div class="small list-group-item urlline" ';
             urlline += 'id="' + source.fulldate + '">';
             urlline += '<a href="' + eurl + '" target="_blank" ';
             if (_isimg(eurl)) {
-                urlline += rabbitify(this);
+                urlline += rabbitify(eurl);
             } else {
                 urlline += 'data-content="[' + source.time + '] ';
                 urlline += '<span class=\'label label-success\'>';
@@ -105,7 +105,7 @@ var process_urlline = function(data, lastdate, cnt) {
             }
             /* what is actually shown in LotD div */
             urlline += '><span class="glyphicon glyphicon-globe"></span> ';
-            urlline += escape_html(this).replace(/https?:\/\//,'') + '</a>';
+            urlline += eurl.replace(/https?:\/\//,'') + '</a>';
             urlline += '</div>';
         });
         $(cnt).append(urlline);
