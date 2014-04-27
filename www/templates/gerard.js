@@ -77,13 +77,17 @@ var process_urlline = function(data, lastdate, cnt) {
         if (lastdate && source['fulldate'] == lastdate)
             return true
         var urlline = '';
+        var hasimg = false;
+        var hastags = false;
         $.each(source.urls, function() {
+            console.log(escape_html(this));
             var eurl = escape_html(this).replace(/[^a-z0-9]$/i, '');
             urlline += '<div class="small list-group-item urlline" ';
             urlline += 'id="' + source.fulldate + '">';
             urlline += '<a href="' + eurl + '" target="_blank" ';
             if (_isimg(eurl)) {
                 urlline += rabbitify(eurl);
+                hasimg = true;
             } else {
                 urlline += 'data-content="[' + source.time + '] ';
                 urlline += '<span class=\'label label-success\'>';
@@ -91,6 +95,7 @@ var process_urlline = function(data, lastdate, cnt) {
                 urlline += escape_html(source.line) + ' ';
                 urlline += '<br />';
                 if (source.tags.length > 0) {
+                    hastags = true;
                     $.each(source.tags, function() {
                         urlline += '<span class=\'label label-warning\'>';
                         urlline +=  escape_html(this) + ' ';
@@ -104,7 +109,13 @@ var process_urlline = function(data, lastdate, cnt) {
                 urlline += 'data-toggle="popover"';
             }
             /* what is actually shown in LotD div */
-            urlline += '><span class="glyphicon glyphicon-globe"></span> ';
+            if (hasimg)
+                urlline += '><span class="glyphicon glyphicon-film"></span> ';
+            else if (hastags)
+                urlline += '><span class="glyphicon glyphicon-tag"></span> ';
+            else
+                urlline += '><span class="glyphicon glyphicon-globe"></span> ';
+
             urlline += eurl.replace(/https?:\/\//,'') + '</a>';
             urlline += '</div>';
         });
@@ -175,6 +186,10 @@ $(function() {
             /* needed so the modal does not disappear */
             return false;
         };
+    });
+
+    $('#next-results').on('click', function() {
+        alert('bleh');
     });
 
     /* change search type */
