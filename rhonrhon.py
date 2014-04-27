@@ -9,7 +9,6 @@ import requests
 import getopt
 import sys
 import socket
-import thread
 from elasticsearch import Elasticsearch
 from os.path import expanduser
 
@@ -32,7 +31,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.auth = []
 
         if listen_port > 0:
-            print "Creating listening socket on 127.0.0.1:{0} to get fed !".format(listen_port)
+            print("Creating listening socket on 127.0.0.1:{0} to get fed !".format(listen_port))
             server_thread = thread.start_new_thread(self.create_server_socket, (int(listen_port),))
 
         irc.client.ServerConnection.buffer_class = CustomLineBuffer
@@ -86,8 +85,8 @@ class Bot(irc.bot.SingleServerIRCBot):
         channel = target.replace('#', '')
 
         tags = []
-        tagmatch = '\ #\ *([^#]+)\ *#\s*'
-        tagsub = re.search(tagmatch, pl)
+        tagmatch = '#\ *([^#]+)\ *#\s*'
+        tagsub = re.search('\ ' + tagmatch, pl)
         if tagsub:
             tags = tagsub.group(1).replace(' ', '').split(',')
             pl = re.sub(tagmatch, '', pl)
@@ -231,7 +230,7 @@ class Bot(irc.bot.SingleServerIRCBot):
                                             , matching_dict['line']
                                             , True)
                 else:
-                    print "Unabled to parse the line"
+                    print("Unabled to parse the line")
                 client_socket.send(str(0))
 
         finally:
@@ -241,7 +240,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         tomatch = re.search(attr['match'] + '=(.*)', data)
         if tomatch and tomatch.group(1):
             return_value = attr['parser'](tomatch.group(1))
-            print "changing " + attr['match'] + " to {0}".format(return_value)
+            print("changing " + attr['match'] + " to {0}".format(return_value))
             return return_value
         return None
 
@@ -267,7 +266,7 @@ if __name__ == "__main__":
             pass
     for opt, arg in opts:
         if opt == '-h':
-            print "{0} -h [ -l 1337 ]".format(sys.argv[0])
+            print("{0} -h [ -l 1337 ]".format(sys.argv[0]))
             sys.exit()
         elif opt == "-l":
             listen_port = arg
