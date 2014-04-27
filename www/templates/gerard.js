@@ -165,12 +165,22 @@ $(function() {
 
     _refresh();
 
+    /* main search */
     var search = $('input[class="form-control"]');
+    var stype = 'line';
     search.keypress(function(event) {
+        console.log(stype);
         if (event.which == 13) {
-            modal_display('line', search.val().replace(/ +/g, ','));
+            modal_display(stype, search.val().replace(/ +/g, ','));
+            /* needed so the modal does not disappear */
             return false;
         };
+    });
+
+    /* change search type */
+    $(".dropdown-menu").on('click', 'li a', function() {
+        stype = $(this).prop('id');
+        $(".dropdown-toggle").html($(this).text() + ' &#9660;');
     });
 
     var auto_refresh = setInterval(function() {
