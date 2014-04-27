@@ -35,7 +35,7 @@ def _get_body(t, d):
                         'sort': [{'fulldate': {'order': 'desc'}}]
                        }
     urlbody = {'query':
-                {'match': {'urls': 'http www'}},
+                {'match': {'urls': 'http https www'}},
                 'sort': [{'fulldate': {'order': 'desc'}}],
                 'size': nlines
               }

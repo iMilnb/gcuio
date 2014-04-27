@@ -82,13 +82,21 @@ var _getjson = function(t) {
         lastdate = '';
     var get_last = '{{ url_for("get_last") }}?t=' + t + '&d=' + lastdate;
 
-    var fn =  window['process_' + t + 'line'];
+    var doscroll = false;
+    var livepos = live.prop('scrollTop') + live.prop('offsetHeight');
+    console.log(t + ': ' + livepos + ' ' + live.prop('scrollHeight') + ' date: ' + lastdate);
+    if (livepos >= live.prop('scrollHeight'))
+        doscroll = true;
+
+    var fn =  window['process_' + t + 'line']; /* build generic function */
     $.getJSON(get_last, function(data) {
         if (typeof fn === "function")
             fn(data, lastdate, '.' + t + 'live');
     });
 
-    live.prop({ scrollTop: live.prop("scrollHeight") });
+    /* autoscroll only if we're at the bottom (i.e. now scrolling) */
+    if (!lastdate || doscroll)
+        live.prop({ scrollTop: live.prop('scrollHeight') });
 }
 
 var _refresh = function() {
@@ -105,12 +113,10 @@ var _async_ajax = function(b) {
 }
 
 $(function() {
-    /* make ajax call synchronous for the first call */
+    /* synchronous ajax queries mess up first display plus scrolling pos. */
     _async_ajax(false)
 
     _refresh();
-
-    _async_ajax(true)
 
     var auto_refresh = setInterval(function() {
         _refresh();
