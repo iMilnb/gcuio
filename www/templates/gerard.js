@@ -50,16 +50,17 @@ var process_urlline = function(data, lastdate, cnt) {
         if (lastdate && source['fulldate'] == lastdate)
             return true
         var urlline = '';
-        var urldate = source.fulldate;
-        var ircline = source.line;
         $.each(source.urls, function() {
             urlline += '<div class="small list-group-item urlline" ';
-            urlline += 'id="' + urldate + '">';
+            urlline += 'id="' + source.fulldate + '">';
             urlline += '<a href="' + this + '" target="_blank" ';
-            urlline += 'data-content="' + ircline + '" ';
+            urlline += 'data-content="[' + source.time + '] ';
+            urlline += '<' + source.nick + '> ';
+            urlline +=  source.line + '" ';
             urlline += 'data-placement="left" ';
             urlline += 'data-container="body" ';
             urlline += 'data-toggle="popover">';
+            urlline += '<span class="glyphicon glyphicon-globe"></span> ';
             urlline += this + '</a>';
             urlline += '</div>';
             console.log(urlline);
@@ -92,12 +93,19 @@ var _refresh = function() {
     $('[data-toggle="popover"]').popover({trigger: 'hover'});
 }
 
-$(function() {
+var _async_ajax = function(b) {
     $.ajaxSetup({
-        async: false
+        async: b
     });
+}
+
+$(function() {
+    /* make ajax call synchronous for the first call */
+    _async_ajax(false)
 
     _refresh();
+
+    _async_ajax(true)
 
     var auto_refresh = setInterval(function() {
         _refresh();

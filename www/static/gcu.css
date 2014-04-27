@@ -30,3 +30,13 @@ footer {
     background: #222;
     padding: 10px 5px;
 }
+
+.popover {
+    font-family: monospace;
+    background: #222;
+    font-size: 12px;
+}
+
+.popover.left .arrow:after {
+    border-left-color: #222;
+}
