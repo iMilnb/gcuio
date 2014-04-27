@@ -86,11 +86,16 @@ var process_urlline = function(data, lastdate, cnt) {
                 urlline += rabbitify(this);
             } else {
                 urlline += 'data-content="[' + source.time + '] ';
-                urlline += '<' + escape_html(source.nick) + '> ';
-                urlline +=  escape_html(source.line) + ' ';
+                urlline += '<span class=\'label label-success\'>';
+                urlline += escape_html(source.nick) + '</span><br />';
+                urlline += escape_html(source.line) + ' ';
+                urlline += '<br />';
                 if (source.tags.length > 0) {
                     $.each(source.tags, function() {
-                        urlline += '&#9873; ' + escape_html(this) + ' ';
+                        urlline += '<span class=\'label label-warning\'>';
+                        urlline +=  escape_html(this) + ' ';
+                        urlline += '<span class=\'glyphicon glyphicon-tag\'>';
+                        urlline += '</span></span> ';
                     });
                 }
                 urlline += '" ';
