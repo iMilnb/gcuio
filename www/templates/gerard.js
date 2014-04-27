@@ -84,7 +84,7 @@ var _getjson = function(t) {
 
     var doscroll = false;
     var livepos = live.prop('scrollTop') + live.prop('offsetHeight');
-    console.log(t + ': ' + livepos + ' ' + live.prop('scrollHeight') + ' date: ' + lastdate);
+
     if (livepos >= live.prop('scrollHeight'))
         doscroll = true;
 
