@@ -138,7 +138,7 @@ var modal_display = function(k, v) {
     $.getJSON(search, function(data) {
         process_ircline(data, undefined, '.modal-body');
     });
-    $('#searchModal').modal();
+    $('#searchModal').modal({});
 }
 
 var _refresh = function() {
@@ -164,6 +164,7 @@ $(function() {
     search.keypress(function(event) {
         if (event.which == 13) {
             modal_display('line', search.val().replace(/ +/g, ','));
+            return false;
         };
     });
 
