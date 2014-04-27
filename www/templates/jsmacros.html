@@ -1,7 +1,10 @@
 {% macro button(name, style) %}
 if (source['{{ name }}'] != '') {
     ircline += '<span class="{{ name }}">';
-    ircline += '<a href="#" onclick="modal_display();return false;" ';
+    ircline += '<a href="#" ';
+    ircline += 'onclick="modal_display(';
+    ircline += '\'{{ name }}\', \'' + source['{{ name }}'] + '\'';
+    ircline += '); return false;" ';
     ircline += 'role="button" class="{{ style[name] }}">';
     ircline += escape_html(source['{{ name }}']);
     ircline += '</button>';
@@ -12,7 +15,10 @@ if (source['{{ name }}'] != '') {
 {% macro buttonlst(name, style, icon) %}
 ircline += '<span class="{{ name }}">'
 $.each(source.{{ name }}, function() {
-    ircline += '<a href="#" onclick="modal_display();return false;" ';
+    ircline += '<a href="#" ';
+    ircline += 'onclick="modal_display(';
+    ircline += '\'{{ name }}\', \'' + source['{{ name }}'] + '\'';
+    ircline += '); return false;" ';
     ircline += 'role="button" class="{{ style[name] }}">';
     ircline += escape_html(this);
     {% if icon %}

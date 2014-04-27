@@ -87,11 +87,9 @@ def search():
                 'sort': [{'fulldate': {'order': 'desc'}}],
                 'size': nlines
               }
-    print(s_body)
-    return json.dumps(es.search(
-                        index = es_idx, doc_type = channel, body = s_body)
-                    )
+    res = es.search(index = es_idx, doc_type = channel, body = s_body)
 
+    return json.dumps(res['hits']['hits'])
 
 @app.route('/fonts/<path:filename>')
 def fonts(filename):

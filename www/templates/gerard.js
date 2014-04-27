@@ -107,6 +107,15 @@ var _getjson = function(t) {
         live.prop({ scrollTop: live.prop('scrollHeight') });
 }
 
+var modal_display = function(k, v) {
+    var search = '{{ url_for("search") }}?k=' + k + '&v=' + v;
+    $('.modal-body').empty();
+    $.getJSON(search, function(data) {
+        process_ircline(data, undefined, '.modal-body');
+    });
+    $('#searchModal').modal();
+}
+
 var _refresh = function() {
     _getjson('irc');
     _getjson('url');
@@ -118,10 +127,6 @@ var _async_ajax = function(b) {
     $.ajaxSetup({
         async: b
     });
-}
-
-var modal_display = function() {
-    $('#searchModal').modal();
 }
 
 $(function() {
