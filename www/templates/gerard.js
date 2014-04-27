@@ -78,7 +78,7 @@ var process_urlline = function(data, lastdate, cnt) {
             return true
         var urlline = '';
         $.each(source.urls, function() {
-            var eurl = escape_html(this).replace(/[^a-z0-9]$/, '');
+            var eurl = escape_html(this).replace(/[^a-z0-9]$/i, '');
             urlline += '<div class="small list-group-item urlline" ';
             urlline += 'id="' + source.fulldate + '">';
             urlline += '<a href="' + eurl + '" target="_blank" ';
@@ -139,9 +139,9 @@ var _getjson = function(t) {
 
 var modal_display = function(k, v) {
     var search = '{{ url_for("search") }}?k=' + k + '&v=' + v;
-    $('.modal-body').empty();
+    $('.searchbox').empty();
     $.getJSON(search, function(data) {
-        process_ircline(data, undefined, '.modal-body');
+        process_ircline(data, undefined, '.searchbox');
     });
     $('#searchModal').modal({});
 }
