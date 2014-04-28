@@ -2,8 +2,23 @@
 {% import "jsmacros.html" as js %}
 {% block gerard %}
 
+var htmlesc = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '\\\\': '&#92;',
+};
+
 var escape_html = function(data) {
-    return data.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    $.each(htmlesc, function(k, v) {
+        var re = new RegExp(k, "g");
+        data = data.replace(re, v);
+    });
+    /* let's try to avoid XSS... */
+    data = data.replace(/(<|&lt;|&amp;lt;)\/?script(>|&gt;|&amp;lt;)/gi, '');
+    return data;
 }
 
 var _isimg = function(url) {
@@ -13,7 +28,7 @@ var _isimg = function(url) {
 }
 
 var rabbitify = function(url) {
-    var img = '<img src=\'' + url + '\' width=\'200\'>';
+    var img = '<img src=\'' + encodeURI(url) + '\' width=\'200\'>';
     var data = 'data-toggle="popover" data-content="' + img + '" ';
     data += 'data-placement="auto"';
     return data;
