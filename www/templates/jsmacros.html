@@ -13,7 +13,8 @@ if (source.{{ name }}) {
 {%- endmacro %}
 
 {% macro buttonlst(name, style, icon) %}
-if (typeof {{ name }} !== 'undefined') {
+if (typeof source.{{ name }} !== 'undefined' && source.{{ name }}[0]) {
+    ircline += '<span class="glyphicon glyphicon-chevron-right"></span>';
     ircline += '<span class="{{ name }}">'
     $.each(source.{{ name }}, function() {
         ircline += '<a href="#" ';

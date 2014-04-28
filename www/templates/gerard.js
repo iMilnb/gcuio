@@ -56,7 +56,6 @@ var process_ircline = function(data, lastdate, cnt) {
 
         {{ js.button('time', ircline_style) }}
         {{ js.button('nick', ircline_style) }}
-        ircline += '<span class="glyphicon glyphicon-chevron-right"></span>';
         /* destination nicks */
         {{ js.buttonlst('tonick', ircline_style) }}
         /* real line */
@@ -156,7 +155,6 @@ var modal_display = function(k, v, d) {
         k = modal_display._key;
         v = modal_display._val;
     }
-    console.log(k + ' ' + v + ' ' + d);
     if (!d)
         d = '';
     var search = '{{ url_for("search") }}?k=' + k + '&v=' + v + '&d=' + d;
