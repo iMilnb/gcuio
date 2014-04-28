@@ -1,5 +1,5 @@
 {% macro button(name, style) %}
-if (source.{{ name }} != '') {
+if (source.{{ name }}) {
     ircline += '<span class="{{ name }}">';
     ircline += '<a href="#" ';
     ircline += 'onclick="modal_display(';
@@ -13,19 +13,21 @@ if (source.{{ name }} != '') {
 {%- endmacro %}
 
 {% macro buttonlst(name, style, icon) %}
-ircline += '<span class="{{ name }}">'
-$.each(source.{{ name }}, function() {
-    ircline += '<a href="#" ';
-    ircline += 'onclick="modal_display(';
-    ircline += '\'{{ name }}\', \'' + source['{{ name }}'] + '\'';
-    ircline += '); return false;" ';
-    ircline += 'role="button" class="{{ style[name] }}">';
-    ircline += escape_html(this);
-    {% if icon %}
-    ircline += '<span class="glyphicon glyphicon-{{ icon }}" ';
-    ircline += 'style="padding-left: 5px;"></span>';
-    {% endif %}
-    ircline += '</a>';
-});
-ircline += '</span>';
+if (typeof {{ name }} !== 'undefined') {
+    ircline += '<span class="{{ name }}">'
+    $.each(source.{{ name }}, function() {
+        ircline += '<a href="#" ';
+        ircline += 'onclick="modal_display(';
+        ircline += '\'{{ name }}\', \'' + source['{{ name }}'] + '\'';
+        ircline += '); return false;" ';
+        ircline += 'role="button" class="{{ style[name] }}">';
+        ircline += escape_html(this);
+        {% if icon %}
+        ircline += '<span class="glyphicon glyphicon-{{ icon }}" ';
+        ircline += 'style="padding-left: 5px;"></span>';
+        {% endif %}
+        ircline += '</a>';
+    });
+    ircline += '</span>';
+}
 {%- endmacro %}

@@ -56,8 +56,7 @@ var process_ircline = function(data, lastdate, cnt) {
 
         {{ js.button('time', ircline_style) }}
         {{ js.button('nick', ircline_style) }}
-        if (source.tonick[0])
-            ircline += '<span class="glyphicon glyphicon-chevron-right"></span>';
+        ircline += '<span class="glyphicon glyphicon-chevron-right"></span>';
         /* destination nicks */
         {{ js.buttonlst('tonick', ircline_style) }}
         /* real line */
@@ -161,11 +160,24 @@ var modal_display = function(k, v, d) {
     if (!d)
         d = '';
     var search = '{{ url_for("search") }}?k=' + k + '&v=' + v + '&d=' + d;
+    /* wipe old content */
     $('.searchbox').empty();
     $.getJSON(search, function(data) {
         process_ircline(data, d, '.searchbox');
     });
+    var reslen = $('.searchbox > div ').length;
+    var maxlen = {{ nlines }};
+    maxlen--;
+    
     $('#searchModal').modal({});
+
+    if (reslen < 1)
+        $('.searchbox').append('Pas de r&eacute;sultats');
+
+    if (reslen < maxlen)
+        $('#next-results').hide();
+    else
+        $('#next-results').show();
 }
 
 var _refresh = function() {

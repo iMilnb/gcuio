@@ -52,7 +52,11 @@ def _get_body(t, d):
                         'size': nlines,
                        }
 
-    return locals()['{0}body{1}'.format(t, fd)]
+    try:
+        ret = locals()['{0}body{1}'.format(t, fd)]
+    except:
+        ret = None
+    return ret
 
 @app.route('/get_last', methods=['GET'])
 def get_last():
@@ -96,7 +100,7 @@ def search():
                             'must': [
                                 {'match': {
                                     key: {'query': vals, "operator": "and"}}},
-                                {'range': {'fulldate': {'from': d }}},
+                                {'range': {'fulldate': {'to': d }}},
                             ],
                         },
                     },
@@ -120,7 +124,8 @@ def images(filename):
 @app.route('/')
 def home():
 
-    return render_template('gerard.js', ircline_style=ircline_style)
+    return render_template('gerard.js',
+                            ircline_style=ircline_style, nlines=nlines)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5080, debug=True)
