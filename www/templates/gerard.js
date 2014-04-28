@@ -80,15 +80,16 @@ var process_urlline = function(data, lastdate, cnt) {
         var hasimg = false;
         var hastags = false;
         $.each(source.urls, function() {
-            console.log(escape_html(this));
-            var eurl = escape_html(this).replace(/[^a-z0-9]$/i, '');
+            var eurl = encodeURI(this.replace(/[^\/a-z0-9]$/i, ''));
             urlline += '<div class="small list-group-item urlline" ';
             urlline += 'id="' + source.fulldate + '">';
             urlline += '<a href="' + eurl + '" target="_blank" ';
+            /* URL is an image, popover is a preview */
             if (_isimg(eurl)) {
                 urlline += rabbitify(eurl);
                 hasimg = true;
             } else {
+            /* URL is not an image, popover is an abstract */
                 urlline += 'data-content="[' + source.time + '] ';
                 urlline += '<span class=\'label label-success\'>';
                 urlline += escape_html(source.nick) + '</span><br />';
@@ -148,11 +149,21 @@ var _getjson = function(t) {
         live.prop({ scrollTop: live.prop('scrollHeight') });
 }
 
-var modal_display = function(k, v) {
-    var search = '{{ url_for("search") }}?k=' + k + '&v=' + v;
+var modal_display = function(k, v, d) {
+    if (k && v) {
+        modal_display._key = k;
+        modal_display._val = v;
+    } else {
+        k = modal_display._key;
+        v = modal_display._val;
+    }
+    console.log(k + ' ' + v + ' ' + d);
+    if (!d)
+        d = '';
+    var search = '{{ url_for("search") }}?k=' + k + '&v=' + v + '&d=' + d;
     $('.searchbox').empty();
     $.getJSON(search, function(data) {
-        process_ircline(data, undefined, '.searchbox');
+        process_ircline(data, d, '.searchbox');
     });
     $('#searchModal').modal({});
 }
@@ -180,24 +191,27 @@ $(function() {
     var search = $('input[class="form-control"]');
     var stype = 'line';
     search.keypress(function(event) {
-        console.log(stype);
         if (event.which == 13) {
-            modal_display(stype, search.val().replace(/ +/g, ','));
+            modal_display(stype, search.val().replace(/ +/g, ','), undefined);
             /* needed so the modal does not disappear */
             return false;
         };
     });
 
+    /* next search results */
     $('#next-results').on('click', function() {
-        alert('bleh');
+        var lastdate = $('.searchbox .ircline').last().attr('id');
+        modal_display(undefined, undefined, lastdate);
+        return false;
     });
 
     /* change search type */
     $(".dropdown-menu").on('click', 'li a', function() {
-        stype = $(this).prop('id');
-        $(".dropdown-toggle").html($(this).text() + ' &#9660;');
+        stype = $(this).prop('id'); /* get type from menu id */
+        $(".dropdown-toggle").html($(this).text() + ' &#9660;'); /* v arrow */
     });
 
+    /* set the timer to refresh data every 5 seconds */
     var auto_refresh = setInterval(function() {
         _refresh();
     }, 5000);

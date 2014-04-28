@@ -81,12 +81,29 @@ def search():
 
     key = request.args.get('k')
     vals = ' '.join(request.args.get('v').split(','))
+    d = request.args.get('d')
 
-    s_body = {'query':
-                {'match': {key: {'query': vals, "operator": "and"}}},
-                'sort': [{'fulldate': {'order': 'desc'}}],
-                'size': nlines
-              }
+    if not d:
+        s_body = {'query':
+                    {'match': {key: {'query': vals, "operator": "and"}}},
+                    'sort': [{'fulldate': {'order': 'desc'}}],
+                    'size': nlines
+                  }
+    else:
+        s_body = {
+                    'query': {
+                        'bool': {
+                            'must': [
+                                {'match': {
+                                    key: {'query': vals, "operator": "and"}}},
+                                {'range': {'fulldate': {'from': d }}},
+                            ],
+                        },
+                    },
+                    'sort': [{'fulldate': {'order': 'desc'}}],
+                    'size': nlines,
+                   }
+
     res = es.search(index = es_idx, doc_type = channel, body = s_body)
 
     return json.dumps(res['hits']['hits'])
