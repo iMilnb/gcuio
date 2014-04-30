@@ -212,7 +212,11 @@ var _refresh = function() {
     _getjson('irc');
     _getjson('url');
 
-    $('[data-toggle="popover"]').popover({trigger: 'hover', html: true});
+    $('[data-toggle="popover"]').popover({
+                                            trigger: 'hover',
+                                            html: true,
+                                            container: 'body'
+                                        });
 }
 
 var _async_ajax = function(b) {
