@@ -26,12 +26,21 @@ var _isimg = function(url) {
     return false
 }
 
+var minimd = function(str) {
+    var s = str.replace(/`(.+?)`/g, '<code>$1</code>');
+    s = s.replace(/(\s)_([^_]+)_(\s)?/g, '$1<em>$2</em>$3');
+    s = s.replace(/\*(.+?)\*/g, '<strong>$1</strong>');
+
+    return s;
+}
+
 var rabbitify = function(url) {
     var img = '<img src=\'' + escape_html(url) + '\' width=\'200\'>';
     var data = 'data-toggle="popover" data-content="' + img + '" ';
     data += 'data-placement="auto"';
     return data;
 }
+
 /* replaces line URLs with clickable links and apply minimal markdown*/
 var decoline = function(source) {
     /* minimal markdown */
@@ -47,14 +56,6 @@ var decoline = function(source) {
         l = l.replace(this, res);
     });
     return l;
-}
-
-var minimd = function(str) {
-    var s = str.replace(/`(.+?)`/g, '<code>$1</code>');
-    s = s.replace(/_(.+?)_/g, '<em>$1</em>');
-    s = s.replace(/\*(.+?)\*/g, '<strong>$1</strong>');
-
-    return s;
 }
 
 var process_ircline = function(data, lastdate, cnt) {
