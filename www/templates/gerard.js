@@ -16,8 +16,7 @@ var escape_html = function(data) {
         var re = new RegExp(k, "g");
         data = data.replace(re, v);
     });
-    /* let's try to avoid XSS... */
-    data = data.replace(/(<|&lt;|&amp;lt;)\/?script(>|&gt;|&amp;lt;)/gi, '');
+    /* https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet */
     return data;
 }
 
@@ -28,7 +27,7 @@ var _isimg = function(url) {
 }
 
 var rabbitify = function(url) {
-    var img = '<img src=\'' + encodeURI(url) + '\' width=\'200\'>';
+    var img = '<img src=\'' + escape_html(url) + '\' width=\'200\'>';
     var data = 'data-toggle="popover" data-content="' + img + '" ';
     data += 'data-placement="auto"';
     return data;
@@ -93,6 +92,7 @@ var process_urlline = function(data, lastdate, cnt) {
         var hasimg = false;
         var hastags = false;
         $.each(source.urls, function() {
+            /* TODO not too restrictive replace() */
             var eurl = encodeURI(this.replace(/[^\/a-z0-9]$/i, ''));
             urlline += '<div class="small list-group-item urlline" ';
             urlline += 'id="' + source.fulldate + '">';

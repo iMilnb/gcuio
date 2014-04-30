@@ -77,7 +77,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         a real IRC server or from a client socket
         """
 
-        if (re.search('[\[#]\ *nolog\ *[#\]]', pl, re.I)):
+        if (re.search('[\[#]\ *nolog\ *[#\]]', pl, re.I)) or 'nolog' in nick:
             return
 
         date, clock = full_date.isoformat().split('T')
