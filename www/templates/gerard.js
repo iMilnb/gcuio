@@ -13,7 +13,7 @@ var htmlesc = {
 
 var escape_html = function(data) {
     $.each(htmlesc, function(k, v) {
-        var re = new RegExp(k, "g");
+        var re = new RegExp(k, 'g');
         data = data.replace(re, v);
     });
     /* https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet */
@@ -26,12 +26,26 @@ var _isimg = function(url) {
     return false
 }
 
-var minimd = function(str) {
-    var s = str.replace(/`(.+?)`/g, '<code>$1</code>');
-    s = s.replace(/(\s)_([^_]+)_(\s)?/g, '$1<em>$2</em>$3');
-    s = s.replace(/\*(.+?)\*/g, '<strong>$1</strong>');
+var mkmark = function(mark, repl, line) {
+    var rx = '(^|\\\s)' + mark + '([^' + mark + ']+)' + mark + '(\\\s|$)';
 
-    return s;
+    re = new RegExp(rx, 'g');
+
+    return line.replace(re, '$1<' + repl + '>' + '$2' + '</' + repl + '>$3')
+}
+
+var minimd = function(str) {
+    var mds = {
+        '`': 'code',
+        '_': 'em',
+        '\\\*': 'strong',
+    };
+
+    $.each(mds, function(k, v) {
+        str = mkmark(k, v, str);
+    });
+
+    return str;
 }
 
 var rabbitify = function(url) {
