@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from flask import Flask, render_template, request, url_for, jsonify
+from flask import Flask, render_template, request, url_for
 from elasticsearch import Elasticsearch
 
 app = Flask(__name__)

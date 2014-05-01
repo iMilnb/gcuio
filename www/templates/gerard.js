@@ -20,6 +20,9 @@ var escape_html = function(data) {
     return data;
 }
 
+var std_border_bottom = '1px solid black';
+var hl_border_bottom = '1px solid #5090ff';
+
 var _isimg = function(url) {
     if (url.match(/\.(jpe?g|gif|png|bmp)$/i))
         return true
@@ -156,8 +159,10 @@ var process_urlline = function(data, lastdate, cnt) {
 var _getjson = function(t) {
     var live = $('.' + t + 'live'); /* full div */
     var lastdate = $('.' + t + 'line').last().attr('id');
-    if (!lastdate) /* first call */
+    if (!lastdate) {/* first call */
         lastdate = '';
+        this['sh_' + t] = 0;
+    }
     var get_last = '{{ url_for("get_last") }}?t=' + t + '&d=' + lastdate;
 
     var doscroll = false;
@@ -173,8 +178,15 @@ var _getjson = function(t) {
     });
 
     /* autoscroll only if we're at the bottom (i.e. now scrolling) */
-    if (!lastdate || doscroll)
+    if (!lastdate || doscroll) {
+        /* autoscroll to bottom */
         live.prop({ scrollTop: live.prop('scrollHeight') });
+        live.css('border-bottom', std_border_bottom);
+    } else if (this['sh_' + t] < live.prop('scrollHeight'))
+        live.css('border-bottom', hl_border_bottom);
+
+    /* record last scrollHeight */
+    this['sh_' + t] = live.prop('scrollHeight');
 }
 
 var modal_display = function(k, v, d) {
@@ -208,15 +220,26 @@ var modal_display = function(k, v, d) {
         $('#next-results').show();
 }
 
-var _refresh = function() {
-    _getjson('irc');
-    _getjson('url');
+var _refresh = function(w) {
+    _getjson(w);
 
+    /* must be refreshed for every new entry */
     $('[data-toggle="popover"]').popover({
                                             trigger: 'hover',
                                             html: true,
                                             container: 'body'
                                         });
+}
+
+var _check_height = function(t) {
+    var live = $('.' + t + 'live'); /* full div */
+
+    live.scroll(function() {
+        var livepos = live.prop('scrollTop') + live.prop('offsetHeight');
+        if (livepos >= live.prop('scrollHeight')) {
+            live.css('border-bottom', std_border_bottom);
+        }
+    });
 }
 
 var _async_ajax = function(b) {
@@ -229,7 +252,10 @@ $(function() {
     /* synchronous ajax queries mess up first display plus scrolling pos. */
     _async_ajax(false)
 
-    _refresh();
+    $.each(['irc', 'url'], function() {
+        _refresh(this);
+        _check_height(this);
+    });
 
     /* main search */
     var search = $('input[class="form-control"]');
@@ -257,7 +283,8 @@ $(function() {
 
     /* set the timer to refresh data every 5 seconds */
     var auto_refresh = setInterval(function() {
-        _refresh();
+        _refresh('irc');
+        _refresh('url');
     }, 5000);
 
 });
