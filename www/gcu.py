@@ -1,7 +1,6 @@
-import json
 import os
 import re
-from flask import Flask, render_template, request, url_for
+from flask import Flask, render_template, request, url_for, json, Response
 from elasticsearch import Elasticsearch
 
 app = Flask(__name__)
@@ -86,7 +85,7 @@ def get_last():
     
         res = es.search(index = es_idx, doc_type = channel, body = s_body)
     
-        return json.dumps(_res_sort(res))
+        return Response(json.dumps(_res_sort(res)), mimetype='application/json')
 
     # unknown type
     return json.dumps({})
@@ -96,11 +95,12 @@ def search():
     if not request.args.get('k') or not request.args.get('v'):
         return json.dumps({})
 
+    allow_k = ['nick', 'line', 'tags', 'urls', 'date']
     key = request.args.get('k')
     vals = ' '.join(request.args.get('v').split(','))
     d = request.args.get('d')
 
-    if not key in ['nick', 'line', 'tags', 'urls', 'date']:
+    if not key in allow_k:
         return json.dumps({})
 
     if not d:
@@ -129,7 +129,7 @@ def search():
 
     res = es.search(index = es_idx, doc_type = channel, body = s_body)
 
-    return json.dumps(res['hits']['hits'])
+    return Response(json.dumps(res['hits']['hits']), mimetype='application/json')
 
 @app.route('/fonts/<path:filename>')
 def fonts(filename):
