@@ -47,7 +47,7 @@ def _get_body(t, d):
                         'query': {
                             'bool': {
                                 'must': [
-                                    {'match': {'urls': 'http www'}},
+                                    {'match': {'urls': 'http https www'}},
                                     {'range': {'fulldate': {'from': d }}},
                                 ],
                             },
@@ -147,4 +147,5 @@ def home():
                             ircline_style=ircline_style, nlines=nlines)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5080, debug=True)
+    # app.run(host='0.0.0.0', port=5080, debug=True)
+    app.run(host='0.0.0.0', port=5080)

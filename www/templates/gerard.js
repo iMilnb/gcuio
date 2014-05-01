@@ -52,7 +52,8 @@ var minimd = function(str) {
 }
 
 var rabbitify = function(url) {
-    var img = '<img src=\'' + escape_html(url) + '\' width=\'200\'>';
+    var img = '<img src=\'' + escape_html(escape_html(url));
+    img += '\' width=\'200\'>';
     var data = 'data-toggle="popover" data-content="' + img + '" ';
     data += 'data-placement="auto"';
     return data;
@@ -105,13 +106,13 @@ var process_urlline = function(data, lastdate, cnt) {
     $.each(data, function() {
         source = this._source;
         if (lastdate && source['fulldate'] == lastdate)
-            return true
+            return true;
         var urlline = '';
         var hasimg = false;
         var hastags = false;
         $.each(source.urls, function() {
             /* TODO not too restrictive replace() */
-            var eurl = encodeURI(this.replace(/[^\/a-z0-9]$/i, ''));
+            var eurl = encodeURI(this);
             urlline += '<div class="small list-group-item urlline" ';
             urlline += 'id="' + source.fulldate + '">';
             urlline += '<a href="' + eurl + '" target="_blank" ';
@@ -123,21 +124,22 @@ var process_urlline = function(data, lastdate, cnt) {
             /* URL is not an image, popover is an abstract */
                 urlline += 'data-content="[' + source.time + '] ';
                 urlline += '<span class=\'label label-success\'>';
-                urlline += escape_html(source.nick) + '</span><br />';
-                urlline += escape_html(source.line) + ' ';
+                /* Double escaping needed to avoid XSS in popovers */
+                urlline += escape_html(escape_html(source.nick));
+                urlline += '</span><br />';
+                urlline += escape_html(escape_html(source.line)) + ' ';
                 urlline += '<br />';
                 if (source.tags.length > 0) {
                     hastags = true;
                     $.each(source.tags, function() {
                         urlline += '<span class=\'label label-warning\'>';
-                        urlline +=  escape_html(this) + ' ';
+                        urlline +=  escape_html(escape_html(this)) + ' ';
                         urlline += '<span class=\'glyphicon glyphicon-tag\'>';
                         urlline += '</span></span> ';
                     });
                 }
                 urlline += '" ';
                 urlline += 'data-placement="auto" ';
-                urlline += 'data-container="body" ';
                 urlline += 'data-toggle="popover"';
             }
             /* what is actually shown in LotD div */
