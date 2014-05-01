@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from flask import Flask, render_template, request, url_for, jsonify
 from elasticsearch import Elasticsearch
 
@@ -17,6 +18,10 @@ ircline_style = {
     'tonick': 'btn btn-sm btn-info',
     'tags': 'btn btn-sm btn-warning'
 }
+
+# match ISO format - datetime.datetime.utcnow().isoformat()
+# i.e. 2014-04-30T18:22:42.596996
+isodaterx = '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+$'
 
 def _res_sort(res):
     '''
@@ -69,14 +74,22 @@ def get_last():
     curl http://localhost:5000/get_last?t=url&d=2014-04-22T15:07:10.278682
     '''
 
-    if not request.args.get('t'):
-        return json.dumps({})
+    allow_t = ['irc', 'url']
+    d = request.args.get('d')
+    t = request.args.get('t')
 
-    s_body = _get_body(request.args.get('t'), request.args.get('d'))
+    if t in allow_t:
+        if d and not re.search(isodaterx, d):
+            d = ''
 
-    res = es.search(index = es_idx, doc_type = channel, body = s_body)
+        s_body = _get_body(t, d)
+    
+        res = es.search(index = es_idx, doc_type = channel, body = s_body)
+    
+        return json.dumps(_res_sort(res))
 
-    return json.dumps(_res_sort(res))
+    # unknown type
+    return json.dumps({})
 
 @app.route('/search', methods=['GET'])
 def search():
@@ -87,6 +100,9 @@ def search():
     vals = ' '.join(request.args.get('v').split(','))
     d = request.args.get('d')
 
+    if not key in ['nick', 'line', 'tags', 'urls', 'date']:
+        return json.dumps({})
+
     if not d:
         s_body = {'query':
                     {'match': {key: {'query': vals, "operator": "and"}}},
@@ -94,6 +110,9 @@ def search():
                     'size': nlines
                   }
     else:
+        # 'd' is not an iso date format
+        if not re.search(isodaterx, d):
+            return json.dumps({})
         s_body = {
                     'query': {
                         'bool': {
