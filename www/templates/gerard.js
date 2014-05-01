@@ -191,17 +191,16 @@ var _getjson = function(t) {
     this['sh_' + t] = live.prop('scrollHeight');
 }
 
-var modal_display = function(k, v, d) {
-    if (k && v) {
-        modal_display._key = k;
-        modal_display._val = v;
-    } else {
-        k = modal_display._key;
-        v = modal_display._val;
-    }
-    if (!d)
-        d = '';
-    var search = '{{ url_for("search") }}?k=' + k + '&v=' + v + '&d=' + d;
+var modal_display = function(q, d) {
+    if (q)
+        modal_display._q = q;
+    else
+        q = modal_display._q;
+
+    if (d)
+        q += ' AND fulldate:{* TO ' + d +'}';
+
+    var search = '{{ url_for("search") }}?q=' + q;
     /* wipe old content */
     $('.searchbox').empty();
     $.getJSON(search, function(data) {
@@ -261,10 +260,9 @@ $(function() {
 
     /* main search */
     var search = $('input[class="form-control"]');
-    var stype = 'line';
     search.keypress(function(event) {
         if (event.which == 13) {
-            modal_display(stype, search.val().replace(/ +/g, ','), undefined);
+            modal_display(search.val(), undefined);
             /* needed so the modal does not disappear */
             return false;
         };
@@ -273,14 +271,8 @@ $(function() {
     /* next search results */
     $('#next-results').on('click', function() {
         var lastdate = $('.searchbox .ircline').last().attr('id');
-        modal_display(undefined, undefined, lastdate);
+        modal_display(undefined, lastdate);
         return false;
-    });
-
-    /* change search type */
-    $(".dropdown-menu").on('click', 'li a', function() {
-        stype = $(this).prop('id'); /* get type from menu id */
-        $(".dropdown-toggle").html($(this).text() + ' &#9660;'); /* v arrow */
     });
 
     /* set the timer to refresh data every 5 seconds */

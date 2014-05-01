@@ -3,7 +3,7 @@ if (source.{{ name }}) {
     ircline += '<span class="{{ name }}">';
     ircline += '<a href="#" ';
     ircline += 'onclick="modal_display(';
-    ircline += '\'{{ name }}\', \'' + escape_html(source.{{ name }}) + '\'';
+    ircline += '\'{{ name }}:' + escape_html(source.{{ name }}) + '\'';
     ircline += '); return false;" ';
     ircline += 'role="button" class="{{ style[name] }}">';
     ircline += escape_html(source['{{ name }}']);
@@ -20,7 +20,7 @@ if (source.{{ name }} && source.{{ name }}[0]) {
     $.each(source.{{ name }}, function() {
         ircline += '<a href="#" ';
         ircline += 'onclick="modal_display(';
-        ircline += '\'{{ name }}\', \'' + escape_html(this) + '\'';
+        ircline += '\'{{ name }}:' + escape_html(this) + '\'';
         ircline += '); return false;" ';
         ircline += 'role="button" class="{{ style[name] }}">';
         ircline += escape_html(this);

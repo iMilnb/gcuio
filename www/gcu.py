@@ -92,41 +92,20 @@ def get_last():
 
 @app.route('/search', methods=['GET'])
 def search():
-    if not request.args.get('k') or not request.args.get('v'):
+    if not request.args.get('q'):
         return json.dumps({})
 
-    allow_k = ['nick', 'line', 'tags', 'urls', 'date']
-    key = request.args.get('k')
-    vals = ' '.join(request.args.get('v').split(','))
-    d = request.args.get('d')
+    fields = ['nick', 'tonick', 'line', 'tags', 'urls', 'date']
+    q = request.args.get('q')
 
-    if not key in allow_k:
-        return json.dumps({})
+    s_body = {'query': {
+                        'query_string': {'query': q},
+                },
+                'sort': [{'fulldate': {'order': 'desc'}}],
+                'size': nlines
+             }
 
-    if not d:
-        s_body = {'query':
-                    {'match': {key: {'query': vals, "operator": "and"}}},
-                    'sort': [{'fulldate': {'order': 'desc'}}],
-                    'size': nlines
-                  }
-    else:
-        # 'd' is not an iso date format
-        if not re.search(isodaterx, d):
-            return json.dumps({})
-        s_body = {
-                    'query': {
-                        'bool': {
-                            'must': [
-                                {'match': {
-                                    key: {'query': vals, "operator": "and"}}},
-                                {'range': {'fulldate': {'to': d }}},
-                            ],
-                        },
-                    },
-                    'sort': [{'fulldate': {'order': 'desc'}}],
-                    'size': nlines,
-                   }
-
+    print(s_body)
     res = es.search(index = es_idx, doc_type = channel, body = s_body)
 
     return Response(json.dumps(res['hits']['hits']), mimetype='application/json')
@@ -147,5 +126,5 @@ def home():
                             ircline_style=ircline_style, nlines=nlines)
 
 if __name__ == "__main__":
-    # app.run(host='0.0.0.0', port=5080, debug=True)
-    app.run(host='0.0.0.0', port=5080)
+    app.run(host='0.0.0.0', port=5080, debug=True)
+    #app.run(host='0.0.0.0', port=5080)

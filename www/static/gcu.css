@@ -1,7 +1,9 @@
+html {
+    height: 100%;
+}
 body {
     padding-top: 70px;
-}
-html, body {
+    padding-bottom: 100px;
     height: 100%;
 }
 .fullheight {
@@ -24,11 +26,6 @@ html, body {
     height: 90%;
     overflow: auto;
     font-family: monospace;
-}
-
-footer {
-    background: #222;
-    padding: 10px 5px;
 }
 
 .popover {
