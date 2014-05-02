@@ -92,8 +92,14 @@ def get_last():
 
 @app.route('/search', methods=['GET'])
 def search():
+    # no query
     if not request.args.get('q'):
         return json.dumps({})
+
+    if request.args.get('f'):
+        f = request.args.get('f')
+    else:
+        f = 0
 
     fields = ['nick', 'tonick', 'line', 'tags', 'urls', 'date']
     q = request.args.get('q')
@@ -101,14 +107,13 @@ def search():
     s_body = {'query': {
                         'query_string': {'query': q},
                 },
-                'sort': [{'fulldate': {'order': 'desc'}}],
+                'from': f,
                 'size': nlines
              }
 
-    print(s_body)
     res = es.search(index = es_idx, doc_type = channel, body = s_body)
 
-    return Response(json.dumps(res['hits']['hits']), mimetype='application/json')
+    return Response(json.dumps(res['hits']), mimetype='application/json')
 
 @app.route('/fonts/<path:filename>')
 def fonts(filename):

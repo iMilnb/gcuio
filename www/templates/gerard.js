@@ -52,8 +52,8 @@ var minimd = function(str) {
 }
 
 var rabbitify = function(url) {
-    var img = '<img src=\'' + escape_html(escape_html(url));
-    img += '\' width=\'200\'>';
+    var img = escape_html(escape_html(url));
+    img = '<img src=\'' + img + '\' width=\'200\'>';
     var data = 'data-toggle="popover" data-content="' + img + '" ';
     data += 'data-placement="auto"';
     return data;
@@ -191,34 +191,59 @@ var _getjson = function(t) {
     this['sh_' + t] = live.prop('scrollHeight');
 }
 
-var modal_display = function(q, d) {
-    if (q)
-        modal_display._q = q;
-    else
-        q = modal_display._q;
-
-    if (d)
-        q += ' AND fulldate:{* TO ' + d +'}';
-
-    var search = '{{ url_for("search") }}?q=' + q;
+var _searchjson = function(q, f) {
     /* wipe old content */
     $('.searchbox').empty();
-    $.getJSON(search, function(data) {
-        process_ircline(data, d, '.searchbox');
-    });
-    var reslen = $('.searchbox > div ').length;
-    var maxlen = {{ nlines }};
-    maxlen--;
-    
-    $('#searchModal').modal({});
 
-    if (reslen < 1)
+    var search = '{{ url_for("search") }}?q=' + q + '&f=' + f;
+
+    var total = 0;
+    $.getJSON(search, function(data) {
+        process_ircline(data.hits, undefined, '.searchbox');
+        total = data.total;
+    });
+
+    if (total < 1)
         $('.searchbox').append('Pas de r&eacute;sultats');
 
-    if (reslen < maxlen)
+    if (f + {{ nlines }} >= total)
         $('#next-results').hide();
     else
         $('#next-results').show();
+
+    if (f < {{ nlines }})
+        /* we're on the first result page, don't show "previous" */
+        $('#prev-results').hide();
+    else
+        $('#prev-results').show();
+
+    $('.searchbox [data-toggle="popover"]').popover({
+                                                container: '.modal-body',
+                                                html: true,
+                                                trigger: 'hover'
+                                            });
+
+    return f;
+}
+
+var modal_display = function(q) {
+
+    var f = _searchjson(q, 0);
+
+    $('#searchModal').modal({});
+
+    /* next search results */
+    $('#next-results').on('click', function() {
+        f = _searchjson(q, f + {{ nlines }});
+        return false;
+    });
+
+    /* prev search results */
+    $('#prev-results').on('click', function() {
+        f = _searchjson(q, f - {{ nlines }});
+        return false;
+    });
+
 }
 
 var _refresh = function(w) {
@@ -262,17 +287,11 @@ $(function() {
     var search = $('input[class="form-control"]');
     search.keypress(function(event) {
         if (event.which == 13) {
-            modal_display(search.val(), undefined);
+            /* no date specified */
+            modal_display(search.val(), 0);
             /* needed so the modal does not disappear */
             return false;
         };
-    });
-
-    /* next search results */
-    $('#next-results').on('click', function() {
-        var lastdate = $('.searchbox .ircline').last().attr('id');
-        modal_display(undefined, lastdate);
-        return false;
     });
 
     /* set the timer to refresh data every 5 seconds */
