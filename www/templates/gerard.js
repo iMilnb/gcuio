@@ -87,7 +87,11 @@ var process_ircline = function(data, lastdate, cnt) {
         ircline += 'class="small {{ ircline_style["div"] }}" ';
         ircline += 'id="' + source['fulldate'] + '">';
 
-        {{ js.button('time', ircline_style) }}
+        if (lastdate === undefined) {
+            {{ js.button('date', ircline_style) }}
+        } else {
+            {{ js.button('time', ircline_style) }}
+        }
         {{ js.button('nick', ircline_style) }}
         /* destination nicks */
         {{ js.buttonlst('tonick', ircline_style) }}

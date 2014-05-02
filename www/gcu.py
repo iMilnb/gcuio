@@ -13,6 +13,7 @@ channel = 'gcu'
 ircline_style = {
     'div': 'ircline',
     'time': 'btn btn-sm btn-default',
+    'date': 'btn btn-sm btn-default',
     'nick': 'btn btn-sm btn-success',
     'tonick': 'btn btn-sm btn-info',
     'tags': 'btn btn-sm btn-warning'
