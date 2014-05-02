@@ -32,6 +32,8 @@ body {
     font-family: monospace;
     background: #222;
     font-size: 12px;
+    /* ensure popover z-index is greater than navbar z-index (1030) */
+    z-index: 1040;
 }
 
 .popover.left .arrow:after {

@@ -1,0 +1,20 @@
+{% macro qssyntax() %}
+<p>La recherche utilise la syntaxe <em>ElasticSearch Query String</em><p>
+<p>Il est possible de chercher un mot simple</p>
+<p><code>foo</code></p>
+<p>Ou des mots associ&eacute;s &agrave; des types</p>
+<p><code>nick:pinpin</code></p>
+<p>Mais aussi de r&eacute;aliser des combinatoires</p>
+<p><code>tags:nsfw AND nick:rabbit</code></p>
+<p>Les types support&eacute;s sont</p>
+<ul>
+<li>nick</li>
+<li>line</li>
+<li>tags</li>
+<li>urls</li>
+<li>date</li>
+</ul>
+<p>Les dates permettent d'effectuer des recherches sur des zones de temps,
+par exemple, jusqu'au 2 Mai 2014</p>
+<p><code>nick:bar AND date:[* TO 2014/05/02]</code></p>
+{%- endmacro %}
