@@ -96,12 +96,11 @@ def search():
     if not request.args.get('q'):
         return json.dumps({})
 
-    if request.args.get('f'):
+    if request.args.get('f') and request.args.get('f').isdigit():
         f = request.args.get('f')
     else:
         f = 0
 
-    fields = ['nick', 'tonick', 'line', 'tags', 'urls', 'date']
     q = request.args.get('q')
 
     s_body = {'query': {
