@@ -5,12 +5,12 @@ import irc.bot
 import re
 import datetime
 import json
-import requests
 import getopt
 import sys
 import socket
 from elasticsearch import Elasticsearch
 from os.path import expanduser
+from threading import Thread
 
 exec(open(expanduser("~") + '/.rhonrhonrc').read())
 
@@ -29,10 +29,11 @@ class CustomLineBuffer(irc.client.LineBuffer):
 class Bot(irc.bot.SingleServerIRCBot):
     def __init__(self):
         self.auth = []
+        self.serv_socket = socket.socket()
 
         if listen_port > 0:
             print("Creating listening socket on 127.0.0.1:{0} to get fed !".format(listen_port))
-            server_thread = thread.start_new_thread(self.create_server_socket, (int(listen_port),))
+            Thread(target=self.create_server_socket, args=(listen_port,)).start()
 
         irc.client.ServerConnection.buffer_class = CustomLineBuffer
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)],
@@ -269,7 +270,7 @@ if __name__ == "__main__":
             print("{0} -h [ -l 1337 ]".format(sys.argv[0]))
             sys.exit()
         elif opt == "-l":
-            listen_port = arg
+            listen_port = int(arg)
     try:
         Bot().start()
     except:
