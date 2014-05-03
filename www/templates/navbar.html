@@ -1,6 +1,6 @@
 {% import "popover.html" as pop %}
-<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-  <div class="container">
+<div class="navbar navbar-inverse navbar-fixed-top col-md-12" role="navigation">
+  <div class="container col-md-10 col-md-offset-1">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
         <span class="sr-only">Toggle navigation</span>
@@ -16,7 +16,8 @@
     </div>
     <div class="navbar-collapse collapse">
       <form class="navbar-form navbar-right" role="form">
-        <a href="#" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="bottom" data-html="true" data-content="{{ pop.qssyntax() }}"><span class="glyphicon glyphicon-search"></span></a>&nbsp;
+        <a href="#" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="bottom" data-html="true" data-content="{{ pop.qssyntax() }}"><span class="glyphicon glyphicon-eye-open"></span></a>&nbsp;
+        &nbsp;
         <input type="text" class="form-control" placeholder="Chercher...">
       </form>
     </div><!--/.navbar-collapse -->
