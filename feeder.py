@@ -72,13 +72,13 @@ def walk_dir(logdir):
 def read_log_file(filename):
     tomatch = re.search(file_name_match, filename)
     if not tomatch:
-        print 'error parsing filename {0}'.format(filename)
+        print('error parsing filename {0}'.format(filename))
         return
     m_dict = tomatch.groupdict()
 
     date = myDate(m_dict['year'], m_dict['month'], m_dict['day'])
 
-    print "notice: channel={0}, full-date=({1})".format(m_dict['channel'], date)
+    print("notice: channel={0}, full-date=({1})".format(m_dict['channel'], date))
 
     s = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
@@ -94,7 +94,7 @@ def read_log_file(filename):
     f = open(filename, 'r')
     for line in f:
         if re.search('<[^>]+>', line):
-            print line
+            print(line)
             s.send(line)
             s.recv(1)
 
@@ -106,7 +106,7 @@ def set_rhonrhon_attrs(s, key, item):
     s.send(key + "=" + item + "\n")
 
 def _usage():
-    print "Usage: {0} -p 1337".format(sys.argv[0])
+    print("Usage: {0} -p 1337".format(sys.argv[0]))
 
 if __name__ == "__main__":
     try:
