@@ -103,7 +103,7 @@ def read_log_file(filename):
 
 
 def set_rhonrhon_attrs(s, key, item):
-    s.send(key + "=" + item + "\n")
+    s.send('{0}={1}\n'.format(key,item))
 
 def _usage():
     print("Usage: {0} -p 1337".format(sys.argv[0]))
