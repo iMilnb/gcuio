@@ -254,8 +254,6 @@ var modal_display = function(q, t) {
 
     _searchjson(q, f);
 
-    console.log('q: ' + q);
-
     $('#searchModal').modal({});
 
 }
