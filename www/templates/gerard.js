@@ -87,7 +87,7 @@ var process_ircline = function(data, lastdate, cnt) {
         ircline += 'class="small {{ ircline_style["div"] }}" ';
         ircline += 'id="' + source['fulldate'] + '">';
 
-        if (lastdate === undefined) {
+        if (lastdate === undefined) { /* on a searchbox */
             {{ js.button('date', ircline_style) }}
         } else {
             {{ js.button('time', ircline_style) }}
@@ -127,20 +127,21 @@ var process_urlline = function(data, lastdate, cnt) {
             } else {
             /* URL is not an image, popover is an abstract */
                 urlline += 'data-content="[' + source.time + '] ';
-                urlline += '<span class=\'label label-success\'>';
+                urlline += '<span class=\'label label-success bigger-label\'>';
                 /* Double escaping needed to avoid XSS in popovers */
                 urlline += escape_html(escape_html(source.nick));
-                urlline += '</span><br />';
+                urlline += '</span> ';
                 urlline += escape_html(escape_html(source.line)) + ' ';
-                urlline += '<br />';
                 if (source.tags.length > 0) {
                     hastags = true;
+                    urlline += '<h5>';
                     $.each(source.tags, function() {
                         urlline += '<span class=\'label label-warning\'>';
                         urlline +=  escape_html(escape_html(this)) + ' ';
                         urlline += '<span class=\'glyphicon glyphicon-tag\'>';
                         urlline += '</span></span> ';
                     });
+                    urlline += '</h5>';
                 }
                 urlline += '" ';
                 urlline += 'data-placement="auto" ';
@@ -253,7 +254,7 @@ var modal_display = function(q, t) {
 
     _searchjson(q, f);
 
-    console.log('f: ' + f);
+    console.log('q: ' + q);
 
     $('#searchModal').modal({});
 

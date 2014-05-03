@@ -2,9 +2,11 @@
 if (source.{{ name }}) {
     ircline += '<span class="{{ name }}">';
     ircline += '<a href="#" ';
-    ircline += 'onclick="modal_display(';
-    ircline += '\'{{ name }}:' + escape_html(source.{{ name }}) + '\'';
-    ircline += ', undefined); return false;" ';
+    if ('{{ name }}' != 'time') { /* no idea what to do with time yet */
+        ircline += 'onclick="modal_display(';
+        ircline += '\'{{ name }}:' + escape_html(source.{{ name }}) + '\'';
+        ircline += ', undefined); return false;" ';
+    }
     ircline += 'role="button" class="{{ style[name] }}">';
     ircline += escape_html(source['{{ name }}']);
     ircline += '</a>';

@@ -44,3 +44,7 @@ body {
 .modal-body {
     font-family: monospace;
 }
+
+.bigger-label {
+    font-size: 11px;
+}
