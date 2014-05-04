@@ -78,18 +78,22 @@ def get_last():
     d = request.args.get('d')
     t = request.args.get('t')
 
+    rep = {}
     if t in allow_t:
         if d and not re.search(isodaterx, d):
             d = ''
 
         s_body = _get_body(t, d)
+   
+        try: # catch anything to ES
+            res = es.search(index = es_idx, doc_type = channel, body = s_body)
+            rep = _res_sort(res)
     
-        res = es.search(index = es_idx, doc_type = channel, body = s_body)
-    
-        return Response(json.dumps(_res_sort(res)), mimetype='application/json')
+        except:
+            pass
 
     # unknown type
-    return json.dumps({})
+    return Response(json.dumps(rep), mimetype='application/json')
 
 @app.route('/search', methods=['GET'])
 def search():
@@ -111,9 +115,15 @@ def search():
                 'size': nlines
              }
 
-    res = es.search(index = es_idx, doc_type = channel, body = s_body)
+    rep = {}
+    try:
+        res = es.search(index = es_idx, doc_type = channel, body = s_body)
+    
+        rep = res['hits']
+    except:
+        pass
 
-    return Response(json.dumps(res['hits']), mimetype='application/json')
+    return Response(json.dumps(rep), mimetype='application/json')
 
 @app.route('/fonts/<path:filename>')
 def fonts(filename):

@@ -8,8 +8,9 @@ import string
 import json
 from elasticsearch import Elasticsearch, helpers
 
-server = 'irc.freenode.org'
+server = 'chat.freenode.net'
 channel = 'gcu'
+es_idx = 'rhonrhon'
 
 numonth = {
     'Jan': '01',
@@ -87,8 +88,8 @@ def process_file(filename, date):
                 pl = r.group(3)
                 source = process_ircline(date, time, nick, pl)
                 action = {
-                    '_index': 'rhonrhon',
-                    '_type': 'gcu',
+                    '_index': es_idx,
+                    '_type': channel,
                     '_source': source
                 }
                 bulk.append(action)
