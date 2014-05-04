@@ -35,6 +35,8 @@ def process_ircline(hdate, time, nick, pl):
         return
 
     date = '{0}-{1}-{2}'.format(hdate['year'], hdate['month'], hdate['day'])
+    if re.search('^\d{2}:\d{2}$', time):
+        time = '{0}:00'.format(time)
     clock = time
     channel = chan.replace('#', '')
 
