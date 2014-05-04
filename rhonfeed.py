@@ -27,7 +27,7 @@ numonth = {
     'Dec': '12',
 }
 
-ircline = '\[(\d{2}:\d{2})\]\s+<([^\>]+)>\s+(.+)'
+ircline = '\[(\d{2}:\d{2})(:\d{2})?\]\s+<([^\>]+)>\s+(.+)'
 
 es = Elasticsearch()
 
@@ -84,8 +84,10 @@ def process_file(filename, date):
             r = re.search(ircline, line.rstrip())
             if r:
                 time = r.group(1)
-                nick = r.group(2)
-                pl = r.group(3)
+                if r.group(2): # eggdrop logs changed two years ago
+                    time = '{0}{1}'.format(time, r.group(2))
+                nick = r.group(3)
+                pl = r.group(4)
                 source = process_ircline(date, time, nick, pl)
                 action = {
                     '_index': es_idx,
