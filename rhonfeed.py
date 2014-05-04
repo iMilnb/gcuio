@@ -78,7 +78,11 @@ def process_ircline(hdate, time, nick, pl):
         print("dumping {0} to {1}/{2}".format(data, 'rhonrhon', channel))
     except UnicodeEncodeError:
         print("Your charset does not permit to dump that dataset.")
-    r = es.index(index='rhonrhon', doc_type=channel, body=json.dumps(data))
+
+    try:
+        r = es.index(index='rhonrhon', doc_type=channel, body=json.dumps(data))
+    except:
+        pass
     print(r)
 
 def process_file(filename, date):
