@@ -108,6 +108,9 @@ def search():
 
     q = request.args.get('q')
 
+    if q.startswith('*') or len(q) < 4:
+        return json.dumps({})
+
     s_body = {'query': {
                         'query_string': {'query': q},
                 },
