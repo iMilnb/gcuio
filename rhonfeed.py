@@ -6,10 +6,10 @@ import re
 import random
 import string
 import json
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, helpers
 
 server = 'irc.freenode.org'
-chan = '#gcu'
+channel = 'gcu'
 
 numonth = {
     'Jan': '01',
@@ -38,7 +38,6 @@ def process_ircline(hdate, time, nick, pl):
     if re.search('^\d{2}:\d{2}$', time):
         time = '{0}:00'.format(time)
     clock = time
-    channel = chan.replace('#', '')
 
     tags = []
     tagmatch = '#\ *([^#]+)\ *#\s*'
@@ -74,26 +73,27 @@ def process_ircline(hdate, time, nick, pl):
         'urls': urls,
         'line': pl
     }
-    try:
-        print("dumping {0} to {1}/{2}".format(data, 'rhonrhon', channel))
-    except UnicodeEncodeError:
-        print("Your charset does not permit to dump that dataset.")
-
-    try:
-        r = es.index(index='rhonrhon', doc_type=channel, body=json.dumps(data))
-    except:
-        pass
-    print(r)
+    return data
 
 def process_file(filename, date):
     with open(filename) as logfile:
+        print('processing {0}'.format(filename))
+        bulk = []
         for line in logfile:
             r = re.search(ircline, line.rstrip())
             if r:
                 time = r.group(1)
                 nick = r.group(2)
                 pl = r.group(3)
-                process_ircline(date, time, nick, pl)
+                source = process_ircline(date, time, nick, pl)
+                action = {
+                    '_index': 'rhonrhon',
+                    '_type': 'gcu',
+                    '_source': source
+                }
+                bulk.append(action)
+
+        helpers.bulk(es, bulk)
 
 def walkdir(logdir):
     for root, dirs, files in os.walk(logdir):
