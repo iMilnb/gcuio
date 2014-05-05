@@ -123,7 +123,8 @@ def search():
                         },
                 },
                 'from': f,
-                'size': nlines
+                'size': nlines,
+                'sort': [{'fulldate': {'order': 'desc'}}]
              }
 
     rep = {}
