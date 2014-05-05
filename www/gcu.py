@@ -115,8 +115,8 @@ def search():
                         'query_string': {
                             'query': q,
                             "default_operator" : "and",
-                            "allow_leading_wildcard" : false,
-                            "analyze_wildcard" : true
+                            "allow_leading_wildcard" : 'false',
+                            "analyze_wildcard" : 'true'
                         },
                 },
                 'from': f,
