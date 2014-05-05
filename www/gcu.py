@@ -3,7 +3,7 @@ import re
 from flask import Flask, render_template, request, url_for, json, Response
 from elasticsearch import Elasticsearch
 
-app = Flask(__name__)
+app = Flask(__name__, instance_path=os.getcwd()) # latter param needed by uwsgi
 es = Elasticsearch()
 
 nlines = 25
