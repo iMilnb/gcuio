@@ -211,6 +211,7 @@ var _searchjson = function(q, f) {
         process_ircline(data.hits, undefined, '.searchbox');
         total = data.total;
     });
+    $('#total').html(' (' + total + ' r&eacute;sultats)');
 
     if (total < 1)
         $('.searchbox').append('Pas de r&eacute;sultats');
