@@ -322,7 +322,7 @@ $(function() {
     var auto_refresh = setInterval(function() {
         _refresh('irc');
         _refresh('url');
-    }, 5000);
+    }, 8000);
 
 });
 {% endblock %}
