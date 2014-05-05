@@ -1,5 +1,8 @@
 import os
 import re
+import sys
+import base64
+import hashlib
 from flask import Flask, render_template, request, url_for, json, Response
 from elasticsearch import Elasticsearch
 
@@ -133,6 +136,25 @@ def search():
 
     return Response(json.dumps(rep), mimetype='application/json')
 
+@app.route('/short_url', methods=['GET'])
+def short_url():
+    '''
+    URL shortener, idea taken from
+    https://github.com/pyr/url-shortener/blob/master/url_shortener/shorten.py
+    '''
+
+    if not request.args.get('u'):
+        return json.dumps({})
+
+    url = request.args.get('u')
+
+    x = hashlib.md5()
+    x.update(url.encode('utf-8'))
+    s = base64.b64encode(x.digest()[-4:]).decode('utf-8')
+    s = s.replace('=','').replace('/','_')
+
+    return Response(json.dumps({url: s}))
+
 @app.route('/fonts/<path:filename>')
 def fonts(filename):
     return app.send_static_file(os.path.join('fonts', filename))
@@ -149,5 +171,7 @@ def home():
                             ircline_style=ircline_style, nlines=nlines)
 
 if __name__ == "__main__":
-    #app.run(host='0.0.0.0', port=5080, debug=True)
-    app.run(host='0.0.0.0', port=5080)
+    if len(sys.argv) > 1 and sys.argv[1] == '-d':
+        app.run(host='0.0.0.0', port=5080, debug=True)
+    else:
+        app.run(host='0.0.0.0', port=5080)
