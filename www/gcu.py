@@ -142,6 +142,8 @@ def short_url():
     '''
     URL shortener, idea taken from
     https://github.com/pyr/url-shortener/blob/master/url_shortener/shorten.py
+
+    XXX: not sure what to do with this
     '''
 
     if not request.args.get('u'):

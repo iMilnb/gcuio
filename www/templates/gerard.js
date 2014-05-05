@@ -155,8 +155,12 @@ var process_urlline = function(data, lastdate, cnt) {
             else
                 urlline += '><span class="glyphicon glyphicon-globe"></span> ';
 
-            urlline += eurl.replace(/https?:\/\//,'') + '</a>';
-            urlline += '</div>';
+            eurl = eurl.replace(/https?:\/\//,'').replace(/^www\./, '');
+
+            var maxlen = 30;
+            if (eurl.length > maxlen)
+                eurl = eurl.substr(0,maxlen - 1) + "&hellip;";
+            urlline += eurl + '</a></div>';
         });
         $(cnt).append(urlline);
     });
