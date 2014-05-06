@@ -3,6 +3,7 @@ import re
 import sys
 import base64
 import hashlib
+import requests
 from flask import Flask, render_template, request, url_for, json, Response
 from elasticsearch import Elasticsearch
 
@@ -12,6 +13,7 @@ es = Elasticsearch()
 nlines = 25
 es_idx = 'rhonrhon'
 channel = 'gcu'
+status_url = 'http://status.gcu.io/nginx_status' # that URL is not resolvable
 
 ircline_style = {
     'div': 'ircline',
@@ -157,6 +159,19 @@ def short_url():
     s = s.replace('=','').replace('/','_')
 
     return Response(json.dumps({url: s}))
+
+@app.route('/status', methods=['GET'])
+def status():
+    '''
+    Retrieve nginx stub_status
+    '''
+    ret = {}
+    r = requests.get(status_url)
+    if r.status_code == 200:
+        a = re.sub('\n.+', '', r.text.lower()).strip().split(': ')
+        ret = {a[0].replace(' ', '_'): a[1]}
+
+    return Response(json.dumps(ret))
 
 @app.route('/fonts/<path:filename>')
 def fonts(filename):

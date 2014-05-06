@@ -274,6 +274,16 @@ var _refresh = function(w) {
                                         });
 }
 
+var _refresh_stats = function() {
+    var stats_url = '{{ url_for("status") }}';
+
+    var stats = 0;
+    $.getJSON(stats_url, function(data) {
+        stats = data.active_connections;
+    });
+    $('#stats').html(stats + ' lurkers');
+}
+
 var _check_height = function(t) {
     var live = $('.' + t + 'live'); /* full div */
 
@@ -299,6 +309,7 @@ $(function() {
         _refresh(this);
         _check_height(this);
     });
+    _refresh_stats();
 
     /* main search */
     var search = $('input[class="form-control"]');
@@ -327,6 +338,7 @@ $(function() {
     var auto_refresh = setInterval(function() {
         _refresh('irc');
         _refresh('url');
+        _refresh_stats();
     }, 8000);
 
 });
