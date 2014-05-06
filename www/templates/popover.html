@@ -1,7 +1,7 @@
 {% macro qssyntax() %}
 <p>La recherche utilise la syntaxe <em>ElasticSearch Query String</em><p>
-<p>Il est possible de chercher un mot simple</p>
-<p><code>foo</code></p>
+<p>Il est possible de chercher un mot simple (4 lettres min.)</p>              
+<p><code>nsfw</code></p>
 <p>Ou des mots associ&eacute;s &agrave; des types</p>
 <p><code>nick:pinpin</code></p>
 <p>Mais aussi de r&eacute;aliser des combinatoires</p>
@@ -15,7 +15,7 @@
 <li>date</li>
 </ul>
 <p>Les dates permettent d'effectuer des recherches sur des zones de temps,
-par exemple, jusqu'au 2 Mai 2014</p>
+par exemple, jusqu'au 2 mai 2014</p>
 <p><code>nick:bar AND date:&lt;2014-05-02]</code></p>
 <p>mais aussi, les phrases &eacute;crites par <code>bar</code> entre 2012 et 2014</p>
 <p><code>nick:foo AND date:(&lt;2014 AND &gt;2012)]</code></p>
