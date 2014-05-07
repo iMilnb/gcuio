@@ -51,6 +51,7 @@ var minimd = function(str) {
     return str;
 }
 
+/* generates a popover preview for images */
 var rabbitify = function(url) {
     var img = escape_html(escape_html(url));
     img = '<img src=\'' + img + '\' width=\'200\'>';
@@ -76,6 +77,7 @@ var decoline = function(source) {
     return l;
 }
 
+/* process irc channel window */
 var process_ircline = function(data, lastdate, cnt) {
     $.each(data, function() {
         source = this._source;
@@ -106,6 +108,7 @@ var process_ircline = function(data, lastdate, cnt) {
     });
 }
 
+/* process "links of the day" column */
 var process_urlline = function(data, lastdate, cnt) {
     $.each(data, function() {
         source = this._source;
