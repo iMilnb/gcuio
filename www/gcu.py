@@ -113,8 +113,11 @@ def search():
 
     q = request.args.get('q')
 
-    if len(q) < 4:
+    if len(q) < 4: # avoid short searches
         return json.dumps({})
+
+    # alias to make grrrreg happy
+    q = q.replace('tag:', 'tags:')
 
     s_body = {'query': {
                         'query_string': {
