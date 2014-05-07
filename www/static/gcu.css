@@ -41,6 +41,10 @@ body {
     border-left-color: #222;
 }
 
+.modal-dialog {
+    width: 60%;
+}
+
 .modal-body {
     font-family: monospace;
 }
