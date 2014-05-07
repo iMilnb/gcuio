@@ -77,6 +77,18 @@ var decoline = function(source) {
     return l;
 }
 
+var mktweeturl = function(data) {
+    var text = data.line;
+    var nick = data.nick;
+    var via = 'GCUsquad';
+    var tags = data.tags.join(',');
+
+    var tweeturl = 'https://twitter.com/share?text=<' + nick + '> ' + text;
+    tweeturl += '&via=' + via + '&hashtags=' + tags;
+
+    return encodeURI(tweeturl);
+}
+
 /* process irc channel window */
 var process_ircline = function(data, lastdate, cnt) {
     $.each(data, function() {
@@ -271,6 +283,11 @@ var _refresh = function(w) {
 
     /* must be refreshed for every new entry */
     $('[data-toggle="popover"]').popover({
+                                            trigger: 'hover',
+                                            html: true,
+                                            container: 'body'
+                                        });
+    $('[data-toggle="tooltip"]').tooltip({
                                             trigger: 'hover',
                                             html: true,
                                             container: 'body'

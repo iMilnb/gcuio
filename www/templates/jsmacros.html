@@ -1,11 +1,17 @@
 {% macro button(name, style) %}
 if (source.{{ name }}) {
     ircline += '<span class="{{ name }}">';
-    ircline += '<a href="#" ';
-    if ('{{ name }}' != 'time') { /* no idea what to do with time yet */
-        ircline += 'onclick="modal_display(';
+    ircline += '<a ';
+    if ('{{ name }}' != 'time') {
+        ircline += 'href="#" onclick="modal_display(';
         ircline += '\'{{ name }}:' + escape_html(source.{{ name }}) + '\'';
         ircline += ', undefined); return false;" ';
+    } else {
+        var tweet = mktweeturl(source);
+        ircline += 'href="' + tweet + '" target="_blank" ';
+        ircline += 'data-toggle="tooltip" data-placement="top" ';
+        ircline += 'title="<img width=\'26\' src=';
+	ircline += '\'{{ url_for('images', filename='tweet.png') }}\'>"';
     }
     ircline += 'role="button" class="{{ style[name] }}">';
     ircline += escape_html(source['{{ name }}']);
