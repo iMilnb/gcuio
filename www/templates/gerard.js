@@ -66,13 +66,13 @@ var decoline = function(source) {
     var l = minimd(escape_html(source.line));
     /* foreach URLs in line, make them a href */
     $.each(source.urls, function() {
-        var eurl = encodeURI(this);
+        var eurl = escape_html(this);
         var res = '<kbd><a href="' + eurl + '" target="_blank"';
         /* if it is an image, make it a popover */
-        if (_isimg(eurl))
-            res += rabbitify(eurl)
+        if (_isimg(this))
+            res += rabbitify(this)
         res += '>' + eurl + '</a></kbd>';
-        l = l.replace(this, res);
+        l = l.replace(eurl, res);
     });
     return l;
 }
@@ -132,14 +132,13 @@ var process_urlline = function(data, lastdate, cnt) {
         var hasimg = false;
         var hastags = false;
         $.each(source.urls, function() {
-            /* TODO not too restrictive replace() */
-            var eurl = encodeURI(this);
+            var eurl = escape_html(this);
             urlline += '<div class="small list-group-item urlline" ';
             urlline += 'id="' + source.fulldate + '">';
             urlline += '<a href="' + eurl + '" target="_blank" ';
             /* URL is an image, popover is a preview */
-            if (_isimg(eurl)) {
-                urlline += rabbitify(eurl);
+            if (_isimg(this)) {
+                urlline += rabbitify(this);
                 hasimg = true;
             } else {
             /* URL is not an image, popover is an abstract */
@@ -172,7 +171,7 @@ var process_urlline = function(data, lastdate, cnt) {
             else
                 urlline += '><span class="glyphicon glyphicon-globe"></span> ';
 
-            eurl = eurl.replace(/https?:\/\//,'').replace(/^www\./, '');
+            eurl = eurl.replace(/^https?:\/\/(www\.)?/,'');
 
             var maxlen = 30;
             if (eurl.length > maxlen)
