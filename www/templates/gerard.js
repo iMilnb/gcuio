@@ -78,15 +78,17 @@ var decoline = function(source) {
 }
 
 var mktweeturl = function(data) {
-    var text = data.line;
-    var nick = data.nick;
+    var text = encodeURIComponent('<' + data.nick + '> ' + data.line);
     var via = 'GCUsquad';
-    var tags = data.tags.join(',');
 
-    var tweeturl = 'https://twitter.com/share?text=<' + nick + '> ' + text;
-    tweeturl += '&via=' + via + '&hashtags=' + tags;
+    var tweeturl = 'https://twitter.com/share?text=' + text;
+    tweeturl += '&via=' + via;
 
-    return encodeURI(tweeturl);
+    if ( data.tags ) {
+      tweeturl += '&hashtags=' + encodeURIComponent(data.tags.join(','));
+    }
+
+    return tweeturl;
 }
 
 /* process irc channel window */
