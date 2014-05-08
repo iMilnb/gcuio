@@ -63,7 +63,7 @@ var rabbitify = function(url) {
 /* replaces line URLs with clickable links and apply minimal markdown*/
 var decoline = function(source) {
     /* minimal markdown */
-    var l = minimd(escape_html(source.line));
+    var l = minimd(escape_html(source.line + ' '));
     /* foreach URLs in line, make them a href */
     $.each(source.urls, function() {
         var eurl = escape_html(this);
@@ -72,7 +72,10 @@ var decoline = function(source) {
         if (_isimg(this))
             res += rabbitify(this)
         res += '>' + eurl + '</a></kbd>';
-        l = l.replace(eurl, res);
+        /* only replace a complete url (like rhonrhon think it is)
+         * so match the last space also
+         */
+        l = l.replace(eurl + ' ', res + ' ');
     });
     return l;
 }
