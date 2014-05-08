@@ -193,7 +193,9 @@ var _getjson = function(t) {
         lastdate = '';
         this['sh_' + t] = 0;
     }
-    var get_last = '{{ url_for("get_last") }}?t=' + t + '&d=' + lastdate;
+
+    var get_last = '{{ url_for("get_last") }}?t=';
+    get_last += encodeURIComponent(t) + '&d=' + encodeURIComponent(lastdate);
 
     var doscroll = false;
     var livepos = live.prop('scrollTop') + live.prop('offsetHeight');
@@ -228,6 +230,9 @@ var _searchjson = function(q, f) {
 
     var total = 0;
     $.getJSON(search, function(data) {
+        if (!data.hits)
+            data = { 'hits': [], 'total': 0 }
+
         process_ircline(data.hits, undefined, '.searchbox');
         total = data.total;
     });

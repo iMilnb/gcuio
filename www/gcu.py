@@ -83,7 +83,7 @@ def get_last():
     d = request.args.get('d')
     t = request.args.get('t')
 
-    rep = {}
+    rep = []
     if t in allow_t:
         if d and not re.search(isodaterx, d):
             d = ''
@@ -132,7 +132,7 @@ def search():
                 'sort': [{'fulldate': {'order': 'desc'}}]
              }
 
-    rep = {}
+    rep = {'total': 0, 'hits': []}
     try:
         res = es.search(index = es_idx, doc_type = channel, body = s_body)
     
