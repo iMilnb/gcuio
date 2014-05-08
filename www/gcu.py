@@ -102,9 +102,11 @@ def get_last():
 
 @app.route('/search', methods=['GET'])
 def search():
+    rep = {'total': 0, 'hits': []}
+
     # no query
     if not request.args.get('q'):
-        return json.dumps({})
+        return json.dumps(rep)
 
     if request.args.get('f') and request.args.get('f').isdigit():
         f = request.args.get('f')
@@ -114,7 +116,7 @@ def search():
     q = request.args.get('q')
 
     if len(q) < 4: # avoid short searches
-        return json.dumps({})
+        return json.dumps(rep)
 
     # alias to make grrrreg happy
     q = q.replace('tag:', 'tags:')
@@ -132,7 +134,6 @@ def search():
                 'sort': [{'fulldate': {'order': 'desc'}}]
              }
 
-    rep = {'total': 0, 'hits': []}
     try:
         res = es.search(index = es_idx, doc_type = channel, body = s_body)
     
