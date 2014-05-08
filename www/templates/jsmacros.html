@@ -4,7 +4,7 @@ if (source.{{ name }}) {
     ircline += '<a ';
     if ('{{ name }}' != 'time') {
         ircline += 'href="#" onclick="modal_display(';
-        ircline += '\'{{ name }}:' + escape_html(source.{{ name }}) + '\'';
+        ircline += '\'{{ name }}:' + escape_html(encodeURIComponent(source.{{ name }}).replace(/'/g,'\\\'')) + '\'';
         ircline += ', undefined); return false;" ';
     } else {
         var tweet = mktweeturl(source);
@@ -28,7 +28,7 @@ if (source.{{ name }} && source.{{ name }}[0]) {
     $.each(source.{{ name }}, function() {
         ircline += '<a href="#" ';
         ircline += 'onclick="modal_display(';
-        ircline += '\'{{ name }}:' + escape_html(this) + '\'';
+        ircline += '\'{{ name }}:' + escape_html(encodeURIComponent(this).replace(/'/g,'\\\'')) + '\'';
         ircline += ', undefined); return false;" ';
         ircline += 'role="button" class="{{ style[name] }}">';
         ircline += escape_html(this);

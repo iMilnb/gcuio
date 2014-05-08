@@ -223,7 +223,8 @@ var _searchjson = function(q, f) {
     /* wipe old content */
     $('.searchbox').empty();
 
-    var search = '{{ url_for("search") }}?q=' + q + '&f=' + f;
+    var search = '{{ url_for("search") }}?q=';
+    search += encodeURIComponent(q) + '&f=' + encodeURIComponent(f);
 
     var total = 0;
     $.getJSON(search, function(data) {
