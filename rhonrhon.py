@@ -45,7 +45,7 @@ class TwiStreamer(TwythonStreamer):
         if 'text' in data:
             if self.ircbot is None:
                 print(data['text'].encode('utf-8'))
-            elif tweetrelay is True and data['retweeted'] == False:
+            elif tweetrelay is True and not 'retweeted_status' in data:
                 for k in twichans:
                     # found matching text
                     if re.search(twichans[k], data['text']):
