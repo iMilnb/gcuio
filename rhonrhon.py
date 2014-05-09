@@ -7,10 +7,55 @@ import re
 import datetime
 import json
 from elasticsearch import Elasticsearch
+from threading import Thread
+from twython import TwythonStreamer
+
+# ~/.rhonrhonrc example
+#
+# server = "chat.freenode.net"
+# port = 6667
+# channels = [ '#mychan' ]
+# nickname = "mynick"
+# nickpass = "my pass"
+# realname = "Me, really"
+# quit_message = "Seeya"
+# 
+# es_nodes = [{'host': 'localhost'}]
+# es_idx = "my_index"
+# 
+# auth = {'opnick': 'supersecret'}
+# 
+# APP_KEY = "twitter_app_api_key"
+# APP_SECRET = "twitter_app_api_secret"
+# OAUTH_TOKEN = "twitter_oauth_token"
+# OAUTH_TOKEN_SECRET = "twitter_oauth_token_secret"
+# 
+# twichans = { '#mychan': 'MyTrack', '#otherchan': 'AnotherTrack' }
 
 exec(open(os.path.expanduser("~") + '/.rhonrhonrc').read())
 
 es = Elasticsearch(es_nodes)
+
+# Lazy global
+tweetrelay = True
+
+class TwiStreamer(TwythonStreamer):
+    ircbot = None
+    def on_success(self, data):
+        if 'text' in data:
+            if self.ircbot is None:
+                print(data['text'].encode('utf-8'))
+            elif tweetrelay is True and data['retweeted'] == False:
+                for k in twichans:
+                    # found matching text
+                    if re.search(twichans[k], data['text']):
+                        u = data['user']['name']
+                        out = '<@{0}> {1}'.format(u, data['text'])
+
+                        self.ircbot.privmsg(k, out)
+
+    def on_error(self, status_code, data):
+        print(status_code, data)
 
 class CustomLineBuffer(irc.client.LineBuffer):
     def lines(self):
@@ -25,6 +70,8 @@ class CustomLineBuffer(irc.client.LineBuffer):
 class Bot(irc.bot.SingleServerIRCBot):
     def __init__(self):
         self.auth = []
+        self.t = None # Twitter thread
+        self.stream = None
 
         irc.client.ServerConnection.buffer_class = CustomLineBuffer
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)],
@@ -114,7 +161,15 @@ class Bot(irc.bot.SingleServerIRCBot):
             return
         self.do_cmd(serv, s)
 
+    def start_track(self, serv):
+        self.stream = TwiStreamer(APP_KEY, APP_SECRET,
+                                  OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+        self.stream.ircbot = serv
+        target = ','.join(twichans.values())
+        self.stream.statuses.filter(track = target)
+
     def do_cmd(self, serv, cmd):
+        global tweetrelay
         print(cmd)
         if cmd[0] == 'die':
             self.die(quit_message)
@@ -122,7 +177,17 @@ class Bot(irc.bot.SingleServerIRCBot):
             serv.join(cmd[1])
         if cmd[0] == 'part' and len(cmd) > 1:
             serv.part(cmd[1])
+        if cmd[0] == 'twitter' and len(cmd) > 1:
+            if cmd[1] == 'on':
+                if self.t is None:
+                    self.t = Thread(target = self.start_track, args = (serv,))
+                    self.t.daemon = True
+                    self.t.start()
 
+                tweetrelay = True
+            # shut twitter relay's mouth
+            if cmd[1] == 'off' and self.t is not None:
+                tweetrelay = False
 
 if __name__ == "__main__":
     Bot().start()
