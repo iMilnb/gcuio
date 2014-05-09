@@ -49,8 +49,9 @@ class TwiStreamer(TwythonStreamer):
                 for k in twichans:
                     # found matching text
                     if re.search(twichans[k], data['text']):
-                        u = data['user']['name']
-                        out = '<@{0}> {1}'.format(u, data['text'])
+                        s = data['user']['screen_name']
+                        n = data['user']['name']
+                        out = '<@{0} ({1})> {2}'.format(s, n, data['text'])
 
                         self.ircbot.privmsg(k, out)
 
