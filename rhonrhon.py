@@ -73,10 +73,23 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.auth = []
         self.t = None # Twitter thread
         self.stream = None
+        self.chaninfos = {
+                            'date': '',
+                            'channel': '',
+                            'topic': '',
+                            'users': [],
+                            'ops': []
+                         }
 
         irc.client.ServerConnection.buffer_class = CustomLineBuffer
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)],
                                            nickname, realname)
+
+    def _dump_data(self, data, idx, doc_type):
+        try:
+            print("dumping {0} to {1}/{2}".format(data, es_idx, doc_type))
+        except UnicodeEncodeError:
+            print("Your charset does not permit to dump that dataset.")
 
     def on_privnotice(self, serv, ev):
         print("notice: {0}".format(ev.arguments[0]))
@@ -142,10 +155,7 @@ class Bot(irc.bot.SingleServerIRCBot):
             'urls': urls,
             'line': pl
         }
-        try:
-            print("dumping {0} to {1}/{2}".format(data, es_idx, channel))
-        except UnicodeEncodeError:
-            print("Your charset does not permit to dump that dataset.")
+        self._dump_data(data, es_idx, channel)
 
         r = es.index(index=es_idx, doc_type=channel, body=json.dumps(data))
         print(r)
@@ -189,6 +199,42 @@ class Bot(irc.bot.SingleServerIRCBot):
             # shut twitter relay's mouth
             if cmd[1] == 'off' and self.t is not None:
                 tweetrelay = False
+
+    ### channel informations
+    def _es_chaninfos(self):
+        chan = self.chaninfos['channel'].replace('#', '')
+        doc_type = '{0}_infos'.format(chan)
+        date = datetime.datetime.utcnow().isoformat()
+
+        data  = {
+            'date': date,
+            'channel': chan,
+            'topic': self.chaninfos['topic'],
+            'users': self.chaninfos['users'],
+            'ops': self.chaninfos['ops']
+        }
+        self._dump_data(data, es_idx, doc_type)
+
+        r = es.index(index=es_idx, doc_type=doc_type, body=json.dumps(data))
+        print(r)
+
+    def _refresh_chaninfos(self, serv, target):
+        if not target.startswith('#'):
+            return
+        self.chaninfos['channel'] = target
+        self.chaninfos['users'] = list(self.channels[target].users())
+        self.chaninfos['ops'] = list(self.channels[target].opers())
+        self._es_chaninfos()
+
+    def on_currenttopic(self, serv, ev):
+        self.chaninfos['topic'] = ev.arguments[1];
+        self._refresh_chaninfos(serv, ev.arguments[0])
+    def on_topic(self, serv, ev): # force refresh currenttopic
+        serv.topic(ev.target)
+    def on_join(self, serv, ev):
+        self._refresh_chaninfos(serv, ev.target)
+    def on_part(self, serv, ev):
+        self._refresh_chaninfos(serv, ev.target)
 
 if __name__ == "__main__":
     Bot().start()
