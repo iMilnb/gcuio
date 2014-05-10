@@ -325,23 +325,31 @@ var _refresh_chaninfos = function() {
         users = data.users;
         ops = data.ops;
     });
-    maxlen = 80;
-    if (topic.length > maxlen)
-        topic = topic.substr(0, maxlen) + "@@EOL@@";
+    var maxlen = 80;
+    var eol = '@@EOL@@';
+    var umark = '@@URL@@';
+    if (topic.length > maxlen) {
+        topic = [topic.slice(0, maxlen), eol, topic.slice(maxlen)].join('');
+        maxlen = false;
+    }
 
     var re = new RegExp('(https?:\/\/[^\\\s]+)', 'g')
     urls = topic.match(re);
-    topic = topic.replace(re, '@@URL@@');
+    topic = topic.replace(re, umark);
     topic = escape_html(topic);
     $.each(urls, function() {
         eurl = escape_html(this);
         url = '<a href=\'' + eurl + '\'>' + eurl + '</a>';
-        topic = topic.replace(/@@URL@@/, url);
+        topic = topic.replace(umark, url);
     });
-    topic = topic.replace(/@@EOL@@/, '&hellip;')
     
     /* update topic tooltip */
-    $('#topic').attr('data-original-title', topic);
+    $('#topic').attr('data-original-title', topic.replace(eol, ''));
+    /* topic was > maxlen, cut it and finish it with ... */
+    if (!maxlen) {
+        re = new RegExp(eol + '.*')
+        topic = topic.replace(re, '&hellip;')
+    }
     /* display channel topic */
     $('#topic').html(topic);
     /* display actual IRC users */
