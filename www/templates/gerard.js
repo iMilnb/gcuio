@@ -381,6 +381,7 @@ $(function() {
     /* synchronous ajax queries mess up first display plus scrolling pos. */
     _async_ajax(false)
 
+    /* load these two before main refresh so popovers are correctly updated */
     _refresh_stats();
     _refresh_chaninfos();
     $.each(['irc', 'url'], function() {

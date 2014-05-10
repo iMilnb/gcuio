@@ -14,6 +14,7 @@ body {
     height: 95%;
     overflow: auto;
     font-family: monospace;
+    background: #111;
 }
 .line {
     margin-left: 5px;
