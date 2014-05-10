@@ -115,11 +115,11 @@ class Bot(irc.bot.SingleServerIRCBot):
         channel = ev.target.replace('#', '')
 
         tags = []
-        tagmatch = '#\ *([^#]+)\ *#\s*'
-        tagsub = re.search('\ ' + tagmatch, pl)
-        if tagsub:
-            tags = tagsub.group(1).replace(' ', '').split(',')
-            pl = re.sub(tagmatch, '', pl)
+        tagmatch = '\s+#[^#]+#'
+        tagsubs = re.findall(tagmatch, pl)
+        for tagsub in tagsubs:
+            tags += map(lambda x: x.strip(' '), tagsub.strip(' #').split(','))
+            pl = re.sub(tagmatch, ' ', pl).rstrip(' ')
 
         urls = re.findall('(https?://[^\s]+)', pl)
 
