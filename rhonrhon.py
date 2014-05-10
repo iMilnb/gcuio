@@ -73,13 +73,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.auth = []
         self.t = None # Twitter thread
         self.stream = None
-        self.chaninfos = {
-                            'date': '',
-                            'channel': '',
-                            'topic': '',
-                            'users': [],
-                            'ops': []
-                         }
+        self.chaninfos = {}
 
         irc.client.ServerConnection.buffer_class = CustomLineBuffer
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)],
@@ -201,40 +195,55 @@ class Bot(irc.bot.SingleServerIRCBot):
                 tweetrelay = False
 
     ### channel informations
-    def _es_chaninfos(self):
-        chan = self.chaninfos['channel'].replace('#', '')
+    def _es_chaninfos(self, target):
+        chan = target.replace('#', '')
         doc_type = '{0}_infos'.format(chan)
         date = datetime.datetime.utcnow().isoformat()
 
         data  = {
             'date': date,
             'channel': chan,
-            'topic': self.chaninfos['topic'],
-            'users': self.chaninfos['users'],
-            'ops': self.chaninfos['ops']
+            'topic': self.chaninfos[target]['topic'],
+            'users': list(self.chaninfos[target]['users']),
+            'ops': list(self.chaninfos[target]['ops'])
         }
         self._dump_data(data, es_idx, doc_type)
 
         r = es.index(index=es_idx, doc_type=doc_type, body=json.dumps(data))
         print(r)
 
-    def _refresh_chaninfos(self, serv, target):
-        if not target.startswith('#'):
-            return
-        self.chaninfos['channel'] = target
-        self.chaninfos['users'] = list(self.channels[target].users())
-        self.chaninfos['ops'] = list(self.channels[target].opers())
-        self._es_chaninfos()
+    def _init_chaninfos(self, target):
+        if not target in self.chaninfos:
+            self.chaninfos[target] = {
+                            'topic': '',
+                            'users': [],
+                            'ops': []
+            }
+
+
+    def _refresh_chaninfos(self, target):
+        if target and target.startswith('#'):
+            self._init_chaninfos(target)
+            self.chaninfos[target]['users'] = self.channels[target].users()
+            self.chaninfos[target]['ops'] = self.channels[target].opers()
+            self._es_chaninfos(target)
+
+    def _refresh_all_chans(self):
+        for k in self.chaninfos:
+            self._refresh_chaninfos(k)
 
     def on_currenttopic(self, serv, ev):
-        self.chaninfos['topic'] = ev.arguments[1];
-        self._refresh_chaninfos(serv, ev.arguments[0])
+        self._init_chaninfos(ev.arguments[0])
+        self.chaninfos[ev.arguments[0]]['topic'] = ev.arguments[1];
+        self._refresh_chaninfos(ev.arguments[0])
     def on_topic(self, serv, ev): # force refresh currenttopic
         serv.topic(ev.target)
     def on_join(self, serv, ev):
-        self._refresh_chaninfos(serv, ev.target)
+        self._refresh_chaninfos(ev.target)
     def on_part(self, serv, ev):
-        self._refresh_chaninfos(serv, ev.target)
+        self._refresh_chaninfos(ev.target)
+    def on_quit(self, serv, ev):
+        self._refresh_all_chans() # quit doesn't set any target
 
 if __name__ == "__main__":
     Bot().start()
