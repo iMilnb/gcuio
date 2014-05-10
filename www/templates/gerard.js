@@ -340,7 +340,7 @@ var _refresh_chaninfos = function() {
     $('#chaninfos').html(users.length);
 
     /* refresh ircers (users) popover list */
-    var ircers = users.join(', ');
+    var ircers = users.sort().join(', ');
     $('#ircers').attr('data-content', ircers);
 }
 
