@@ -11,7 +11,7 @@ body {
 }
 .irclive {
     padding: 5px;
-    height: 90%;
+    height: 95%;
     overflow: auto;
     font-family: monospace;
 }
@@ -23,7 +23,7 @@ body {
 }
 
 .urllive {
-    height: 90%;
+    height: 95%;
     overflow: auto;
     font-family: monospace;
 }
@@ -51,4 +51,24 @@ body {
 
 .bigger-label {
     font-size: 11px;
+}
+
+#topic {
+    font-family: monospace;
+    background: #303035;
+    border: 1px solid #222;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+#lotd {
+    font-family: monospace;
+    background: #303035;
+    border: 1px solid #222;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.footnav {
+    line-height: 20px;
 }

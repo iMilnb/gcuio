@@ -178,7 +178,7 @@ var process_urlline = function(data, lastdate, cnt) {
 
             var maxlen = 30;
             if (eurl.length > maxlen)
-                eurl = eurl.substr(0,maxlen - 1) + "&hellip;";
+                eurl = eurl.substr(0, maxlen - 1) + "&hellip;";
             urlline += eurl + '</a></div>';
         });
         $(cnt).append(urlline);
@@ -311,7 +311,37 @@ var _refresh_stats = function() {
     $.getJSON(stats_url, function(data) {
         stats = data.active_connections;
     });
-    $('#stats').html(stats + ' lurkers');
+    $('#stats').html(stats);
+}
+
+var _refresh_chaninfos = function() {
+    var chaninfos_url = '{{ url_for("chaninfos") }}';
+
+    var topic = '';
+    var users = [];
+    var ops = [];
+    $.getJSON(chaninfos_url, function(data) {
+        topic = data.topic;
+        users = data.users;
+        ops = data.ops;
+    });
+    /* update topic tooltip */
+    $('#topic').attr('data-original-title', topic);
+
+    maxlen = 100;
+    if (topic.length > maxlen)
+        topic = topic.substr(0, maxlen) + "&hellip;";
+
+    topic = topic.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1">$1</a>');
+
+    /* display channel topic */
+    $('#topic').html(topic);
+    /* display actual IRC users */
+    $('#chaninfos').html(users.length);
+
+    /* refresh ircers (users) popover list */
+    var ircers = users.join(', ');
+    $('#ircers').attr('data-content', ircers);
 }
 
 var _check_height = function(t) {
@@ -335,11 +365,12 @@ $(function() {
     /* synchronous ajax queries mess up first display plus scrolling pos. */
     _async_ajax(false)
 
+    _refresh_stats();
+    _refresh_chaninfos();
     $.each(['irc', 'url'], function() {
         _refresh(this);
         _check_height(this);
     });
-    _refresh_stats();
 
     /* main search */
     var search = $('input[class="form-control"]');
@@ -366,9 +397,10 @@ $(function() {
 
     /* set the timer to refresh data every 5 seconds */
     var auto_refresh = setInterval(function() {
+        _refresh_stats();
+        _refresh_chaninfos();
         _refresh('irc');
         _refresh('url');
-        _refresh_stats();
     }, 8000);
 
 });

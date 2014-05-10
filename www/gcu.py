@@ -143,6 +143,21 @@ def search():
 
     return Response(json.dumps(rep), mimetype='application/json')
 
+@app.route('/chaninfos', methods=['GET'])
+def chaninfos():
+    rep = {'total': 0, 'hits': []}
+
+    s_body = {'size': 1, 'sort': [{'date': {'order': 'desc'}}]}
+    doc_type = '{0}_infos'.format(channel)
+
+    try:
+        res = es.search(index = es_idx, doc_type = doc_type, body = s_body)
+        rep = res['hits']['hits'][0]['_source']
+    except:
+        pass
+
+    return Response(json.dumps(rep), mimetype='application/json')
+
 @app.route('/short_url', methods=['GET'])
 def short_url():
     '''

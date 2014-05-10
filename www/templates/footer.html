@@ -1,4 +1,4 @@
-<div class="navbar navbar-default navbar-fixed-bottom">
+<div class="navbar navbar-default navbar-fixed-bottom footnav">
   <div class="container small">
     <div class="row">
       <div class="col-md-7 hidden-sm hidden-xs">
@@ -14,11 +14,11 @@
       </span>
       <span class="navbar-text">
         <a href="http://www.elasticsearch.org/" target="_blank">
-        <img src="{{ url_for('images', filename='es-white.png') }}" width="20"></a>
+        <img src="{{ url_for('images', filename='es-white.png') }}" width="15"></a>
       </span>
       <span class="navbar-text">
         <a href="http://flask.pocoo.org/" target="_blank">
-        <img src="{{ url_for('images', filename='flask-white.png') }}" width="20"></a>
+        <img src="{{ url_for('images', filename='flask-white.png') }}" width="15"></a>
       </span>
       <span class="navbar-text">
         <a href="http://getbootstrap.com/" target="_blank">
@@ -30,7 +30,20 @@
       </span>
     </div>
     <div class="col-md-5">
-      <span class="navbar-text pull-right" id="stats"></span>
+      <ul class="nav nav-pills navbar-right userinfos">
+        <li>
+          <a href="#" id="ircers" data-container="body" data-toggle="popover" data-trigger="hover" data-placement="top" data-html="true" data-content="foo">
+            <span class="badge pull-right" id="chaninfos"></span>
+            ircers
+         </a>
+        </li>
+        <li class="disabled">
+          <a href="#">
+            <span class="badge pull-right" id="stats"></span>
+            lurkers
+         </a>
+        </li>
+      </ul>
     </div>
   </div> <!-- row -->
 </div>
