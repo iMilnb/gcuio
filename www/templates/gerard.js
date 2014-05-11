@@ -95,7 +95,7 @@ var mktweeturl = function(data) {
 }
 
 /* process irc channel window */
-var process_ircline = function(data, lastdate, cnt) {
+var process_ircline = function(data, lastdate, cnt, pos) {
     $.each(data, function() {
         source = this._source;
         /* do not refresh last line */
@@ -121,12 +121,15 @@ var process_ircline = function(data, lastdate, cnt) {
 
         ircline += '</div>';
 
-        $(cnt).append(ircline);
+        if (pos == 'append')
+            $(cnt).append(ircline);
+        else
+            $(cnt).prepend(ircline);
     });
 }
 
 /* process "links of the day" column */
-var process_urlline = function(data, lastdate, cnt) {
+var process_urlline = function(data, lastdate, cnt, pos) {
     $.each(data, function() {
         source = this._source;
         if (lastdate && source['fulldate'] == lastdate)
@@ -181,32 +184,48 @@ var process_urlline = function(data, lastdate, cnt) {
                 eurl = eurl.substr(0, maxlen - 1) + "&hellip;";
             urlline += eurl + '</a></div>';
         });
-        $(cnt).append(urlline);
+        if (pos == 'append')
+            $(cnt).append(urlline);
+        else
+            $(cnt).prepend(ircline);
     });
     
 }
 
-var _getjson = function(t) {
+var _getjson = function(t, todate) {
     var live = $('.' + t + 'live'); /* full div */
-    var lastdate = $('.' + t + 'line').last().attr('id');
-    if (!lastdate) {/* first call */
-        lastdate = '';
-        this['sh_' + t] = 0;
+    var lastdate;
+    var action;
+    var get_last = '{{ url_for("get_last") }}?';
+    get_last += 't=' + encodeURIComponent(t); /* type: irc or url */
+
+    if (todate) { /* todate was given, we're fetching previous results */
+        lastdate = $('.' + t + 'line').first().attr('id');
+        get_last += '&k=to';
+        action = 'prepend';
+    } else { /* normal call, fetch last entries */
+        lastdate = $('.' + t + 'line').last().attr('id');
+        action = 'append';
     }
 
-    var get_last = '{{ url_for("get_last") }}?t=';
-    get_last += encodeURIComponent(t) + '&d=' + encodeURIComponent(lastdate);
+    if (!lastdate) {/* first call */
+        lastdate = '';
+        this['sh_' + t] = 0; /* record type scroll height */
+    }
+
+    get_last += '&d=' + encodeURIComponent(lastdate);
 
     var doscroll = false;
+    /* fetch scrollbar position */
     var livepos = live.prop('scrollTop') + live.prop('offsetHeight');
-
+    /* at bottom, auto scroll to next results */
     if (livepos >= live.prop('scrollHeight'))
         doscroll = true;
 
     var fn =  window['process_' + t + 'line']; /* build generic function */
     $.getJSON(get_last, function(data) {
         if (typeof fn === "function")
-            fn(data, lastdate, '.' + t + 'live');
+            fn(data, lastdate, '.' + t + 'live', action);
     });
 
     /* autoscroll only if we're at the bottom (i.e. now scrolling) */
@@ -216,6 +235,12 @@ var _getjson = function(t) {
         live.css('border-bottom', std_border_bottom);
     } else if (this['sh_' + t] < live.prop('scrollHeight'))
         live.css('border-bottom', hl_border_bottom);
+
+    /* proportional positionning if we're going back in history */
+    if (todate) {
+        var ratio = live.children().length / {{ nlines }};
+        live.prop({ scrollTop: live.prop('scrollHeight') / ratio })
+    }
 
     /* record last scrollHeight */
     this['sh_' + t] = live.prop('scrollHeight');
@@ -289,7 +314,7 @@ var modal_display = function(q, t) {
 }
 
 var _refresh = function(w) {
-    _getjson(w);
+    _getjson(w, undefined);
 
     /* must be refreshed for every new entry */
     $('[data-toggle="popover"]').popover({
@@ -364,10 +389,14 @@ var _check_height = function(t) {
     var live = $('.' + t + 'live'); /* full div */
 
     live.scroll(function() {
+        /* user is at the bottom of div  */
         var livepos = live.prop('scrollTop') + live.prop('offsetHeight');
         if (livepos >= live.prop('scrollHeight')) {
             live.css('border-bottom', std_border_bottom);
         }
+        /* user is on top of div, load previous lines */
+        if (live.prop('scrollTop') == 0)
+            _getjson(t, true);
     });
 }
 

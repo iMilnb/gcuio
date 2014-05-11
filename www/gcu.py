@@ -34,27 +34,28 @@ def _res_sort(res):
     '''
     return sorted(res['hits']['hits'], key=lambda getkey: getkey['sort'][0])
 
-def _get_body(t, d):
+def _get_body(t, k, d):
     fd = ''
     if d:
-        fd = '_fromdate'
+        fd = '_date'
 
     ircbody = {'size': nlines, 'sort': [{'fulldate': {'order': 'desc'}}]}
-    ircbody_fromdate = {'query': 
-                        {'range': {'fulldate': {'from': d }}},
-                        'sort': [{'fulldate': {'order': 'desc'}}]
+    ircbody_date = {'query': 
+                        {'range': {'fulldate': {k: d }}},
+                        'sort': [{'fulldate': {'order': 'desc'}}],
+                        'size': nlines
                        }
     urlbody = {'query':
                 {'match': {'urls': 'http https www'}},
                 'sort': [{'fulldate': {'order': 'desc'}}],
                 'size': nlines
               }
-    urlbody_fromdate = {
+    urlbody_date = {
                         'query': {
                             'bool': {
                                 'must': [
                                     {'match': {'urls': 'http https www'}},
-                                    {'range': {'fulldate': {'from': d }}},
+                                    {'range': {'fulldate': {k: d }}},
                                 ],
                             },
                         },
@@ -62,8 +63,10 @@ def _get_body(t, d):
                         'size': nlines,
                        }
 
+    func = '{0}body{1}'.format(t, fd)
+
     try:
-        ret = locals()['{0}body{1}'.format(t, fd)]
+        ret = locals()[func]
     except:
         ret = None
     return ret
@@ -80,19 +83,27 @@ def get_last():
     '''
 
     allow_t = ['irc', 'url']
+    allow_k = ['from', 'to']
     d = request.args.get('d')
     t = request.args.get('t')
+    k = request.args.get('k')
+
+    if not k:
+        k = 'from'
 
     rep = []
-    if t in allow_t:
+    if t in allow_t and k in allow_k:
         if d and not re.search(isodaterx, d):
             d = ''
 
-        s_body = _get_body(t, d)
+        s_body = _get_body(t, k, d)
    
         try: # catch anything to ES
             res = es.search(index = es_idx, doc_type = channel, body = s_body)
-            rep = _res_sort(res)
+            if k == 'from':
+                rep = _res_sort(res)
+            else: # if fetching items to a date, we will prepend them as-is
+                rep = res['hits']['hits']
     
         except:
             pass
