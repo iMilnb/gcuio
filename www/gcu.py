@@ -233,7 +233,11 @@ def atomfeed():
             datefmt = '%Y-%m-%dT%H:%M:%S.%f'
             pubdate = datetime.datetime.strptime(post['fulldate'], datefmt)
             update = pubdate
-            feed.add(post['line'], title_type='text', url=url,
+            if post['tags']:
+                line = '{0} #{1}#'.format(post['line'], ','.join(post['tags']))
+            else:
+                line = post['line']
+            feed.add(title=line, title_type='text', url=url,
                     author=post['nick'], published=pubdate, updated=update)
     return feed.get_response()
 
