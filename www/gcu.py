@@ -4,7 +4,9 @@ import sys
 import base64
 import hashlib
 import requests
+import datetime
 from flask import Flask, render_template, request, url_for, json, Response
+from werkzeug.contrib.atom import AtomFeed
 from elasticsearch import Elasticsearch
 
 app = Flask(__name__, instance_path=os.getcwd()) # latter param needed by uwsgi
@@ -72,7 +74,7 @@ def _get_body(t, k, d):
     return ret
 
 @app.route('/get_last', methods=['GET'])
-def get_last():
+def get_last(arg_t=None):
     '''
     AJAX resource, retrieves latest type lines, or since 'fromdate'
 
@@ -87,6 +89,9 @@ def get_last():
     d = request.args.get('d')
     t = request.args.get('t')
     k = request.args.get('k')
+
+    if arg_t is not None:
+        t = arg_t
 
     if not k:
         k = 'from'
@@ -202,6 +207,36 @@ def status():
         ret = {a[0].replace(' ', '_'): a[1]}
 
     return Response(json.dumps(ret))
+
+@app.route('/atomfeed', methods=['GET'])
+def atomfeed():
+    t = request.args.get('t')
+    if not t:
+        t = 'url'
+
+    print(t)
+    r = get_last(t)
+    if not r.status_code == 200 and len(r.response) > 0:
+        return {}
+
+    j = json.loads(r.response[0])
+
+    if len(j) < 1:
+        return {}
+
+    feed = AtomFeed('Liens recents',
+                    feed_url=request.url, url=request.url_root,
+                    subtitle="Les liens (presque) SFW de GCU-Squad!")
+    for item in j:
+        post = item['_source']
+        for url in post['urls']:
+            datefmt = '%Y-%m-%dT%H:%M:%S.%f'
+            pubdate = datetime.datetime.strptime(post['fulldate'], datefmt)
+            update = pubdate
+            feed.add(post['line'], title_type='text', url=url,
+                    author=post['nick'], published=pubdate, updated=update)
+    return feed.get_response()
+
 
 @app.route('/fonts/<path:filename>')
 def fonts(filename):

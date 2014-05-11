@@ -10,7 +10,7 @@ if (source.{{ name }}) {
         var tweet = mktweeturl(source);
         ircline += 'href="' + tweet + '" target="_blank" ';
         ircline += 'data-toggle="tooltip" data-placement="top" ';
-        ircline += 'title="<img width=\'20\' src=';
+        ircline += 'title="' + source.date + ' <img width=\'15\' src=';
         ircline += '\'{{ url_for('images', filename='tweet-white.png') }}\'>"';
     }
     ircline += 'role="button" class="{{ style[name] }}">';
