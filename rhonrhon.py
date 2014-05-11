@@ -1,16 +1,27 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import irc.client
 import irc.bot
 import re
 import datetime
 import json
+import logging
+import hashlib
+from logging.handlers import RotatingFileHandler
 from elasticsearch import Elasticsearch
 from threading import Thread
 from twython import TwythonStreamer
+from daemonize import Daemonize
 
 # ~/.rhonrhonrc example
+#
+# name = "rhonrhon"
+# pid = "/some/path/{0}.pid".format(name)
+# logfile = "/some/path/{0}.log".format(name)
+# logsize = 10000000 # 10M
+# logrotate = 7 # 7 backups
 #
 # server = "chat.freenode.net"
 # port = 6667
@@ -23,7 +34,7 @@ from twython import TwythonStreamer
 # es_nodes = [{'host': 'localhost'}]
 # es_idx = "my_index"
 # 
-# auth = {'opnick': 'supersecret'}
+# auth = {'opnick': {'passwd': 'supersecret', 'twitter': True}}'
 # 
 # APP_KEY = "twitter_app_api_key"
 # APP_SECRET = "twitter_app_api_secret"
@@ -44,7 +55,7 @@ class TwiStreamer(TwythonStreamer):
     def on_success(self, data):
         if 'text' in data:
             if self.ircbot is None:
-                print(data['text'].encode('utf-8'))
+                logger.info(data['text'].encode('utf-8'))
             elif tweetrelay is True and not 'retweeted_status' in data:
                 for k in twichans:
                     # found matching text
@@ -56,7 +67,7 @@ class TwiStreamer(TwythonStreamer):
                         self.ircbot.privmsg(k, out)
 
     def on_error(self, status_code, data):
-        print(status_code, data)
+        loggin.warn(status_code, data)
 
 class CustomLineBuffer(irc.client.LineBuffer):
     def lines(self):
@@ -81,12 +92,12 @@ class Bot(irc.bot.SingleServerIRCBot):
 
     def _dump_data(self, data, idx, doc_type):
         try:
-            print("dumping {0} to {1}/{2}".format(data, es_idx, doc_type))
+            logger.info("dumping {0} to {1}/{2}".format(data, es_idx, doc_type))
         except UnicodeEncodeError:
-            print("Your charset does not permit to dump that dataset.")
+            logger.warn("Your charset does not permit to dump that dataset.")
 
     def on_privnotice(self, serv, ev):
-        print("notice: {0}".format(ev.arguments[0]))
+        logger.info("notice: {0}".format(ev.arguments[0]))
         source = ev.source.nick
         if source and source.lower() == 'nickserv':
             if re.search('identify', ev.arguments[0], re.I):
@@ -96,7 +107,7 @@ class Bot(irc.bot.SingleServerIRCBot):
 
     def chanjoin(self, serv):
         for chan in channels:
-            print("joining {0}".format(chan))
+            logger.info("joining {0}".format(chan))
             serv.join(chan)
 
     def on_kick(self, serv, ev):
@@ -152,16 +163,19 @@ class Bot(irc.bot.SingleServerIRCBot):
         self._dump_data(data, es_idx, channel)
 
         r = es.index(index=es_idx, doc_type=channel, body=json.dumps(data))
-        print(r)
+        logger.debug(r)
 
     def on_privmsg(self, serv, ev):
         pl = ev.arguments[0]
         s = pl.split(' ')
         if not ev.source.nick in auth.keys():
             return
-        if len(s) > 1 and s[0] == 'auth' and s[1] == auth[ev.source.nick]:
-            self.auth.append(ev.source.nick)
-            serv.notice(ev.source.nick, 'You are now authenticated')
+        if len(s) > 1 and s[0] == 'auth' and ev.source.nick in auth:
+            h = hashlib.sha256(s[1].encode('utf-8')).hexdigest()
+            nauth = auth[ev.source.nick] # I don't exceed 80 cols.
+            if 'passwd' in nauth and h == nauth['passwd']:
+                self.auth.append(ev.source.nick)
+                serv.notice(ev.source.nick, 'You are now authenticated')
         if not ev.source.nick in self.auth:
             return
         self.do_cmd(serv, s)
@@ -175,8 +189,9 @@ class Bot(irc.bot.SingleServerIRCBot):
 
     def do_cmd(self, serv, cmd):
         global tweetrelay
-        print(cmd)
+        logger.info(cmd[0])
         if cmd[0] == 'die':
+            logger.info('je mata!')
             self.die(quit_message)
         if cmd[0] == 'join' and len(cmd) > 1:
             serv.join(cmd[1])
@@ -210,7 +225,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         self._dump_data(data, es_idx, doc_type)
 
         r = es.index(index=es_idx, doc_type=doc_type, body=json.dumps(data))
-        print(r)
+        logger.debug(r)
 
     def _init_chaninfos(self, target):
         if not target in self.chaninfos:
@@ -245,5 +260,35 @@ class Bot(irc.bot.SingleServerIRCBot):
     def on_quit(self, serv, ev):
         self._refresh_all_chans() # quit doesn't set any target
 
-if __name__ == "__main__":
-    Bot().start()
+foreground = False
+
+# mainly copypasta from
+# https://github.com/thesharp/daemonize
+# http://sametmax.com/ecrire-des-logs-en-python/
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s %(message)s')
+
+if '-f' in sys.argv:
+    foreground = True
+    fh = logging.StreamHandler(sys.stdout)
+else:
+    fh = RotatingFileHandler(logfile, 'a', logsize, logrotate)
+    keep_fds = [fh.stream.fileno()]
+
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+
+# instanciate the bot
+b = Bot()
+
+if foreground is False:
+    daemon = Daemonize(app=name,
+                       pid=pid,
+                       action=b.start,
+                       keep_fds=keep_fds)
+    daemon.start()
+elif __name__ == '__main__':
+    b.start()
