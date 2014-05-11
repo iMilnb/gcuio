@@ -187,7 +187,7 @@ var process_urlline = function(data, lastdate, cnt, pos) {
         if (pos == 'append')
             $(cnt).append(urlline);
         else
-            $(cnt).prepend(ircline);
+            $(cnt).prepend(urlline);
     });
     
 }
