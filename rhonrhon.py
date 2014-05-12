@@ -34,7 +34,7 @@ from daemonize import Daemonize
 #
 # es_nodes = [{'host': 'localhost'}]
 # es_idx = "my_index"
-# 
+#
 # auth = {'opnick': {'passwd': 'sha256hash', 'twitter': True}}'
 # # the previous sha256 hash can be simply obtained via:
 # # print(hashlib.sha256("mysecretpassword".encode("utf-8")).hexdigest())'
@@ -43,7 +43,7 @@ from daemonize import Daemonize
 # APP_SECRET = "twitter_app_api_secret"
 # OAUTH_TOKEN = "twitter_oauth_token"
 # OAUTH_TOKEN_SECRET = "twitter_oauth_token_secret"
-# 
+#
 # twichans = { '#mychan': 'MyTrack', '#otherchan': 'AnotherTrack' }
 
 exec(open(os.path.expanduser("~") + '/.rhonrhonrc').read())
@@ -53,8 +53,11 @@ es = Elasticsearch(es_nodes)
 # Lazy global
 tweetrelay = True
 
+
 class TwiStreamer(TwythonStreamer):
+
     ircbot = None
+
     def on_success(self, data):
         if 'text' in data:
             if self.ircbot is None:
@@ -72,6 +75,7 @@ class TwiStreamer(TwythonStreamer):
     def on_error(self, status_code, data):
         loggin.warn(status_code, data)
 
+
 class CustomLineBuffer(irc.client.LineBuffer):
     def lines(self):
         ld = []
@@ -82,10 +86,11 @@ class CustomLineBuffer(irc.client.LineBuffer):
                 ld.append(line.decode('iso-8859-15', errors='replace'))
         return iter(ld)
 
+
 class Bot(irc.bot.SingleServerIRCBot):
     def __init__(self):
         self.auth = []
-        self.t = None # Twitter thread
+        self.t = None  # Twitter thread
         self.stream = None
         self.chaninfos = {}
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -93,7 +98,7 @@ class Bot(irc.bot.SingleServerIRCBot):
 
         irc.client.ServerConnection.buffer_class = CustomLineBuffer
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)],
-                                           nickname, realname)
+                                            nickname, realname)
 
     def _signal_handler(self, signal, frame):
         logger.info('quietly dying...')
@@ -101,7 +106,9 @@ class Bot(irc.bot.SingleServerIRCBot):
 
     def _dump_data(self, data, idx, doc_type):
         try:
-            logger.info("dumping {0} to {1}/{2}".format(data, es_idx, doc_type))
+            logger.info("dumping {0} to {1}/{2}".format(data,
+                                                        es_idx,
+                                                        doc_type))
         except UnicodeEncodeError:
             logger.warn("Your charset does not permit to dump that dataset.")
 
@@ -110,7 +117,8 @@ class Bot(irc.bot.SingleServerIRCBot):
         source = ev.source.nick
         if source and source.lower() == 'nickserv':
             if re.search('identify', ev.arguments[0], re.I):
-                self.connection.privmsg(source, 'identify {0}'.format(nickpass))
+                self.connection.privmsg(source,
+                                        'identify {0}'.format(nickpass))
             if re.search('identified', ev.arguments[0], re.I):
                 self.chanjoin(serv)
 
@@ -181,7 +189,7 @@ class Bot(irc.bot.SingleServerIRCBot):
             return
         if len(s) > 1 and s[0] == 'auth' and ev.source.nick in auth:
             h = hashlib.sha256(s[1].encode('utf-8')).hexdigest()
-            nauth = auth[ev.source.nick] # I don't exceed 80 cols.
+            nauth = auth[ev.source.nick]  # I don't exceed 80 cols.
             if 'passwd' in nauth and h == nauth['passwd']:
                 self.auth.append(ev.source.nick)
                 serv.notice(ev.source.nick, 'You are now authenticated')
@@ -194,7 +202,7 @@ class Bot(irc.bot.SingleServerIRCBot):
                                   OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
         self.stream.ircbot = serv
         target = ','.join(twichans.values())
-        self.stream.statuses.filter(track = target)
+        self.stream.statuses.filter(track=target)
 
     def do_cmd(self, serv, cmd):
         global tweetrelay
@@ -209,7 +217,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         if cmd[0] == 'twitter' and len(cmd) > 1:
             if cmd[1] == 'on':
                 if self.t is None:
-                    self.t = Thread(target = self.start_track, args = (serv,))
+                    self.t = Thread(target=self.start_track, args=(serv,))
                     self.t.daemon = True
                     self.t.start()
 
@@ -224,7 +232,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         doc_type = '{0}_infos'.format(chan)
         date = datetime.datetime.utcnow().isoformat()
 
-        data  = {
+        data = {
             'date': date,
             'channel': chan,
             'topic': self.chaninfos[target]['topic'],
@@ -238,12 +246,7 @@ class Bot(irc.bot.SingleServerIRCBot):
 
     def _init_chaninfos(self, target):
         if not target in self.chaninfos:
-            self.chaninfos[target] = {
-                            'topic': '',
-                            'users': [],
-                            'ops': []
-            }
-
+            self.chaninfos[target] = {'topic': '', 'users': [], 'ops': []}
 
     def _refresh_chaninfos(self, target):
         if target and target.startswith('#'):
@@ -258,16 +261,20 @@ class Bot(irc.bot.SingleServerIRCBot):
 
     def on_currenttopic(self, serv, ev):
         self._init_chaninfos(ev.arguments[0])
-        self.chaninfos[ev.arguments[0]]['topic'] = ev.arguments[1];
+        self.chaninfos[ev.arguments[0]]['topic'] = ev.arguments[1]
         self._refresh_chaninfos(ev.arguments[0])
-    def on_topic(self, serv, ev): # force refresh currenttopic
+
+    def on_topic(self, serv, ev):  # force refresh currenttopic
         serv.topic(ev.target)
+
     def on_join(self, serv, ev):
         self._refresh_chaninfos(ev.target)
+
     def on_part(self, serv, ev):
         self._refresh_chaninfos(ev.target)
+
     def on_quit(self, serv, ev):
-        self._refresh_all_chans() # quit doesn't set any target
+        self._refresh_all_chans()  # quit doesn't set any target
 
 
 foreground = False
