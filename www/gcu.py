@@ -237,9 +237,9 @@ def atomfeed():
     if len(j) < 1:
         return {}
 
-    feed = AtomFeed('Liens recents',
+    feed = AtomFeed('Les liens (pas forcement) SFW de GCU-Squad!',
                     feed_url=request.url, url=request.url_root,
-                    subtitle="Les liens (presque) SFW de GCU-Squad!")
+                    subtitle='Adresses vues sur le canal #gcu@freenode.net')
     for item in j:
         post = item['_source']
         for url in post['urls']:
