@@ -30,12 +30,14 @@ from daemonize import Daemonize
 # nickpass = "my pass"
 # realname = "Me, really"
 # quit_message = "Seeya"
-# 
+#
 # es_nodes = [{'host': 'localhost'}]
 # es_idx = "my_index"
 # 
-# auth = {'opnick': {'passwd': 'supersecret', 'twitter': True}}'
-# 
+# auth = {'opnick': {'passwd': 'sha256hash', 'twitter': True}}'
+# # the previous sha256 hash can be simply obtained via:
+# # print(hashlib.sha256("mysecretpassword".encode("utf-8")).hexdigest())'
+#
 # APP_KEY = "twitter_app_api_key"
 # APP_SECRET = "twitter_app_api_secret"
 # OAUTH_TOKEN = "twitter_oauth_token"
