@@ -9,6 +9,7 @@ import datetime
 import json
 import logging
 import hashlib
+import signal
 from logging.handlers import RotatingFileHandler
 from elasticsearch import Elasticsearch
 from threading import Thread
@@ -87,10 +88,16 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.t = None # Twitter thread
         self.stream = None
         self.chaninfos = {}
+        signal.signal(signal.SIGINT, self._signal_handler)
+        # SIGTERM is handled by daemonize
 
         irc.client.ServerConnection.buffer_class = CustomLineBuffer
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)],
                                            nickname, realname)
+
+    def _signal_handler(self, signal, frame):
+        logger.info('quietly dying...')
+        self.die(quit_message)
 
     def _dump_data(self, data, idx, doc_type):
         try:
@@ -262,6 +269,7 @@ class Bot(irc.bot.SingleServerIRCBot):
     def on_quit(self, serv, ev):
         self._refresh_all_chans() # quit doesn't set any target
 
+
 foreground = False
 
 # mainly copypasta from
@@ -292,5 +300,6 @@ if foreground is False:
                        action=b.start,
                        keep_fds=keep_fds)
     daemon.start()
+
 elif __name__ == '__main__':
     b.start()
