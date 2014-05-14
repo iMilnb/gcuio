@@ -131,9 +131,9 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.chanjoin(serv)
 
     def on_pubmsg(self, serv, ev):
-        nick = ev.source.nick
+        nick = ev.source.nick.strip()
         full_date = datetime.datetime.utcnow()
-        pl = ev.arguments[0]
+        pl = ev.arguments[0].strip()
 
         if (re.search('[\[#]\ *nolog\ *[#\]]', pl, re.I)) or 'nolog' in nick:
             return
