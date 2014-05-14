@@ -456,5 +456,10 @@ $(function() {
         _refresh('url');
     }, 8000);
 
+    /* windows users must have a special treatment. */
+    if (navigator.platform.match(/windows/gi)) {
+        $('#irclive').css('font-family', 'Comic Sans');
+    }
+
 });
 {% endblock %}
