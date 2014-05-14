@@ -362,11 +362,13 @@ var _refresh_chaninfos = function() {
     urls = topic.match(re);
     topic = topic.replace(re, umark);
     topic = escape_html(topic);
-    $.each(urls, function() {
-        eurl = escape_html(this);
-        url = '<a href=\'' + eurl + '\'>' + eurl + '</a>';
-        topic = topic.replace(umark, url);
-    });
+    if (urls) {
+        $.each(urls, function() {
+            eurl = escape_html(this);
+            url = '<a href=\'' + eurl + '\'>' + eurl + '</a>';
+            topic = topic.replace(umark, url);
+        });
+    }
     
     /* update topic tooltip */
     $('#topic').attr('data-original-title', topic.replace(eol, ''));
