@@ -54,6 +54,16 @@ body {
     font-size: 11px;
 }
 
+.newdate {
+    background: #000;
+    font-weight: bold;
+    padding: 5px;
+}
+
+.newdate a:hover {
+    text-decoration: none;
+}
+
 #irchead {
     font-family: monospace;
     background: #303035;

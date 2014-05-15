@@ -99,6 +99,7 @@ var mktweeturl = function(data) {
 
 /* process irc channel window */
 var process_ircline = function(data, lastdate, cnt, pos) {
+    var prevdate;
     $.each(data, function() {
         source = this._source;
         /* do not refresh last line */
@@ -107,8 +108,17 @@ var process_ircline = function(data, lastdate, cnt, pos) {
         /* timestamp */
         var ircline = '<div ';
         ircline += 'class="small {{ ircline_style["div"] }}" ';
-        ircline += 'id="' + source['fulldate'] + '">';
+        ircline += 'id="' + source.fulldate + '">';
 
+        if (prevdate && source.date != prevdate) {
+            ircline += '<div class="newdate">';
+            ircline += '<a href="#" onclick="searchjson(';
+            ircline += '\'date:' + source.date + '\', \'.irclive\');';
+            ircline += 'return false;">';
+            ircline += '<span class="glyphicon glyphicon-calendar"></span>';
+            ircline += '&nbsp;' + source.date + '</div>';
+            ircline += '</a>';
+        }
         {{ js.button('time', ircline_style) }}
         {{ js.button('nick', ircline_style) }}
         /* destination nicks */
@@ -124,6 +134,8 @@ var process_ircline = function(data, lastdate, cnt, pos) {
             $(cnt).append(ircline);
         else
             $(cnt).prepend(ircline);
+
+        prevdate = source.date;
     });
 }
 
