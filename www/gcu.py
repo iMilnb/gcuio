@@ -85,7 +85,7 @@ def _get_body(t, k, d):
     func = '{0}body{1}'.format(t, fd)
 
     try:
-        ret = locals()[func]
+        ret = eval(func)
     except:
         ret = None
     return ret
