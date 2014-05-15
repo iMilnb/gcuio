@@ -31,6 +31,17 @@ ircline_style = {
 isodaterx = '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+$'
 
 
+def _mkroute(func=None, rules=[], methods=[]):
+    '''
+    Generate routes for multiples and optional REST-style parameters
+    '''
+    p = ''
+    r = ['/{0}'.format(func)] + rules
+    for rule in r:
+        p = ''.join([p, rule])
+        app.add_url_rule(p, func, view_func=eval(func), methods=methods)
+
+
 def _res_sort(res):
     '''
     Sort results given by ES using the 'sort' field
@@ -80,8 +91,8 @@ def _get_body(t, k, d):
     return ret
 
 
-@app.route('/get_last', methods=['GET'])
-def get_last(arg_t=None):
+# No app.route decorator, routes are generated through _mkroute
+def get_last(t=None, k=None, d=None):
     '''
     AJAX resource, retrieves latest type lines, or since 'fromdate'
 
@@ -89,16 +100,20 @@ def get_last(arg_t=None):
 
     curl http://localhost:5000/get_last?t=irc
     curl http://localhost:5000/get_last?t=url&d=2014-04-22T15:07:10.278682
+
+    or
+
+    curl http://localhost:5000/get_last/irc/from/2014-05-14T16:05:06.154931
     '''
 
     allow_t = ['irc', 'url']
     allow_k = ['from', 'to']
-    d = request.args.get('d')
-    t = request.args.get('t')
-    k = request.args.get('k')
-
-    if arg_t is not None:
-        t = arg_t
+    if d is None:
+        d = request.args.get('d')
+    if t is None:
+        t = request.args.get('t')
+    if k is None:
+        k = request.args.get('k')
 
     if not k:
         k = 'from'
@@ -272,6 +287,8 @@ def home():
     return render_template('gerard.js',
                            ircline_style=ircline_style, nlines=nlines)
 
+# generate routes for multi-options URIs
+_mkroute(func='get_last', rules=['/<t>', '/<k>', '/<d>'], methods=['GET'])
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == '-d':
