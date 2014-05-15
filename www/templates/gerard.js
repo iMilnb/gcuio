@@ -2,6 +2,9 @@
 {% import "jsmacros.html" as js %}
 {% block gerard %}
 
+/* IRC live */
+var onair = true;
+
 var htmlesc = {
     '&': '&amp;',
     '<': '&lt;',
@@ -106,11 +109,7 @@ var process_ircline = function(data, lastdate, cnt, pos) {
         ircline += 'class="small {{ ircline_style["div"] }}" ';
         ircline += 'id="' + source['fulldate'] + '">';
 
-        if (lastdate === undefined) { /* on a searchbox */
-            {{ js.button('date', ircline_style) }}
-        } else {
-            {{ js.button('time', ircline_style) }}
-        }
+        {{ js.button('time', ircline_style) }}
         {{ js.button('nick', ircline_style) }}
         /* destination nicks */
         {{ js.buttonlst('tonick', ircline_style) }}
@@ -246,75 +245,38 @@ var _getjson = function(t, todate) {
     this['sh_' + t] = live.prop('scrollHeight');
 }
 
-var _searchjson = function(q, f) {
+var searchjson = function(q, cnt) {
     /* wipe old content */
-    $('.searchbox').empty();
+    $(cnt).empty();
 
-    var search = '{{ url_for("search") }}?q=';
-    search += encodeURIComponent(q) + '&f=' + encodeURIComponent(f);
+    var search = '{{ url_for("search") }}?q=' + encodeURIComponent(q);
+
+    console.log(search);
 
     var total = 0;
     $.getJSON(search, function(data) {
         if (!data.hits)
             data = { 'hits': [], 'total': 0 }
 
-        process_ircline(data.hits, undefined, '.searchbox');
+        process_ircline(data.hits, undefined, cnt);
         total = data.total;
     });
-    $('#total').html(' (' + total + ' r&eacute;sultats)');
+    $('#topic').html(total + ' r&eacute;sultats');
+    $('#backtolive').css('display', 'inline');
 
-    if (total < 1)
-        $('.searchbox').append('Pas de r&eacute;sultats');
 
-    if (f + {{ nlines }} >= total)
-        $('#next-results').hide();
-    else
-        $('#next-results').show();
-
-    if (f < {{ nlines }})
-        /* we're on the first result page, don't show "previous" */
-        $('#prev-results').hide();
-    else
-        $('#prev-results').show();
-
-    $('.searchbox [data-toggle="popover"]').popover({
+    $(cnt + ' [data-toggle="popover"]').popover({
                                                 container: '.modal-body',
                                                 html: true,
                                                 trigger: 'hover'
                                             });
-
-    return f;
 }
 
-var modal_display = function(q, t) {
-    var f = 0;
-    if (q) {
-        /* a query was given, 1st search */
-        modal_display._q = q;
-        modal_display._f = 0;
-    } else {
-        /* no query, take the recorded one */
-        q = modal_display._q;
-        f = modal_display._f;
-    }
-
-    if (t == 'next') {
-        f += {{ nlines }}
-        modal_display._f = f;
-    }
-    if (t == 'prev') {
-        f -= {{ nlines }}
-        modal_display._f = f;
-    }
-
-    _searchjson(q, f);
-
-    $('#searchModal').modal({});
-
-}
-
-var _refresh = function(w) {
-    _getjson(w, undefined);
+/**
+ * Refresh the 't' (type 'irc' or 'url') component
+ */
+var _refresh = function(t) {
+    _getjson(t, undefined);
 
     /* must be refreshed for every new entry */
     $('[data-toggle="popover"]').popover({
@@ -329,6 +291,9 @@ var _refresh = function(w) {
                                         });
 }
 
+/**
+ * Get stab status from upstream nginx
+ */
 var _refresh_stats = function() {
     var stats_url = '{{ url_for("status") }}';
 
@@ -378,7 +343,10 @@ var _refresh_chaninfos = function() {
         topic = topic.replace(re, '&hellip;')
     }
     /* display channel topic */
-    $('#topic').html(topic);
+    if (onair) {
+        $('#topic').html(topic);
+        $('#backtolive').css('display', 'none');
+    }
     /* display actual IRC users */
     $('#chaninfos').html(users.length);
 
@@ -414,6 +382,7 @@ var _async_ajax = function(b) {
 }
 
 $(function() {
+
     /* synchronous ajax queries mess up first display plus scrolling pos. */
     _async_ajax(false)
 
@@ -422,7 +391,7 @@ $(function() {
     _refresh_chaninfos();
     $.each(['irc', 'url'], function() {
         _refresh(this);
-        _check_height(this);
+    //    _check_height(this);
     });
 
     /* main search */
@@ -430,30 +399,20 @@ $(function() {
     search.keypress(function(event) {
         if (event.which == 13) {
             /* no date specified */
-            modal_display(search.val(), undefined);
+            onair = false;
+            searchjson(search.val(), '.irclive');
             /* needed so the modal does not disappear */
             return false;
         };
     });
 
-    /* modal next search results */
-    $('#next-results').on('click', function() {
-        modal_display(undefined, 'next');
-        return false;
-    });
-
-    /* modal prev search results */
-    $('#prev-results').on('click', function() {
-        modal_display(undefined, 'prev');
-        return false;
-    });
-
-    /* set the timer to refresh data every 5 seconds */
+    /* set the timer to refresh data every 8 seconds */
     var auto_refresh = setInterval(function() {
         _refresh_stats();
         _refresh_chaninfos();
-        _refresh('irc');
         _refresh('url');
+        if (onair)
+            _refresh('irc');
     }, 8000);
 
     /* windows users must have a special treatment. */
