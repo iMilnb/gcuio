@@ -461,8 +461,8 @@ $(function() {
     }, 8000);
 
     /* windows users must have a special treatment. */
-    if (navigator.platform.match(/windows/gi)) {
-        $('#irclive').css('font-family', 'Comic Sans');
+    if (navigator.platform.match(/win(32|64|dows)/gi)) {
+        $('#irclive').css('font-family', 'Comic Sans MS');
     }
 
 });
