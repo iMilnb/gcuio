@@ -5,7 +5,7 @@ if (source.{{ name }}) {
     if ('{{ name }}' != 'time') {
         ircline += 'href="#" onclick="searchjson(';
         ircline += '\'{{ name }}:' + escape_html(encodeURIComponent(source.{{ name }}).replace(/'/g,'\\\'')) + '\'';
-        ircline += ', \'.irclive\'); return false;" ';
+        ircline += ', \'.irclive\', false); return false;" ';
     } else {
         var tweet = mktweeturl(source);
         ircline += 'href="' + tweet + '" target="_blank" ';
@@ -29,7 +29,7 @@ if (source.{{ name }} && source.{{ name }}[0]) {
         ircline += '<a href="#" ';
         ircline += 'onclick="searchjson(';
         ircline += '\'{{ name }}:' + escape_html(encodeURIComponent(this).replace(/'/g,'\\\'')) + '\'';
-        ircline += ', \'.irclive\'); return false;" ';
+        ircline += ', \'.irclive\', false); return false;" ';
         ircline += 'role="button" class="{{ style[name] }}">';
         ircline += escape_html(this);
         {% if icon %}

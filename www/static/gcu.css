@@ -55,6 +55,7 @@ body {
 }
 
 .newdate {
+    text-align: right;
     background: #000;
     font-weight: bold;
     padding: 5px;

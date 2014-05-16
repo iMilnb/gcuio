@@ -4,6 +4,9 @@
 
 /* IRC live */
 var onair = true;
+var prevdate = '1970-01-01';
+
+var searchval = '';
 
 var htmlesc = {
     '&': '&amp;',
@@ -99,11 +102,10 @@ var mktweeturl = function(data) {
 
 /* process irc channel window */
 var process_ircline = function(data, lastdate, cnt, pos) {
-    var prevdate;
     $.each(data, function() {
         source = this._source;
         /* do not refresh last line */
-        if (lastdate && source['fulldate'] == lastdate)
+        if (lastdate && source.fulldate == lastdate)
             return true
         /* timestamp */
         var ircline = '<div ';
@@ -113,11 +115,11 @@ var process_ircline = function(data, lastdate, cnt, pos) {
         if (prevdate && source.date != prevdate) {
             ircline += '<div class="newdate">';
             ircline += '<a href="#" onclick="searchjson(';
-            ircline += '\'date:' + source.date + '\', \'.irclive\');';
+            ircline += '\'date:' + source.date + '\', \'.irclive\', false);';
             ircline += 'return false;">';
+            ircline += source.date + '&nbsp;';
             ircline += '<span class="glyphicon glyphicon-calendar"></span>';
-            ircline += '&nbsp;' + source.date + '</div>';
-            ircline += '</a>';
+            ircline += '</div></a>';
         }
         {{ js.button('time', ircline_style) }}
         {{ js.button('nick', ircline_style) }}
@@ -203,6 +205,13 @@ var process_urlline = function(data, lastdate, cnt, pos) {
     
 }
 
+var _getratio = function(cnt) {
+        return cnt.children('.ircline').length / {{ nlines }};
+}
+
+/**
+ * Returns and fills container 't' + 'live'  with latest entries
+ */
 var _getjson = function(t, todate) {
     var live = $('.' + t + 'live'); /* full div */
     var lastdate;
@@ -230,7 +239,7 @@ var _getjson = function(t, todate) {
     /* fetch scrollbar position */
     var livepos = live.prop('scrollTop') + live.prop('offsetHeight');
     /* at bottom, auto scroll to next results */
-    if (livepos >= live.prop('scrollHeight'))
+    if (onair && livepos >= live.prop('scrollHeight'))
         doscroll = true;
 
     var fn =  window['process_' + t + 'line']; /* build generic function */
@@ -248,34 +257,45 @@ var _getjson = function(t, todate) {
         live.css('border-bottom', hl_border_bottom);
 
     /* proportional positionning if we're going back in history */
-    if (todate) {
-        var ratio = live.children().length / {{ nlines }};
-        live.prop({ scrollTop: live.prop('scrollHeight') / ratio })
-    }
+    if (todate)
+        live.prop({ scrollTop: live.prop('scrollHeight') / _getratio(live) })
 
     /* record last scrollHeight */
     this['sh_' + t] = live.prop('scrollHeight');
 }
 
-var searchjson = function(q, cnt) {
+/**
+ * Returns and fills container 'cnt' with query 'q', more is false on first
+ * query, true if we are to fetch next results
+ */
+var searchjson = function(q, cnt, more) {
+    /* record the search for scroll down / _getheight */
+    searchval = q;
     /* wipe old content */
-    $(cnt).empty();
+    if (!more)
+        $(cnt).empty();
 
     var search = '{{ url_for("search") }}?q=' + encodeURIComponent(q);
 
-    console.log(search);
+    if (more)
+        search += '&f=' + $(cnt).children('.ircline').length;
 
     var total = 0;
     $.getJSON(search, function(data) {
         if (!data.hits)
             data = { 'hits': [], 'total': 0 }
 
-        process_ircline(data.hits, undefined, cnt);
+        process_ircline(data.hits, undefined, cnt, 'append');
         total = data.total;
     });
+    /* change topic line */
     $('#topic').html(total + ' r&eacute;sultats');
     $('#backtolive').css('display', 'inline');
 
+    if (more) {
+        var sh = $(cnt).prop('scrollHeight');
+        $(cnt).prop({ scrollTop: sh - (sh / _getratio($(cnt))) })
+    }
 
     $(cnt + ' [data-toggle="popover"]').popover({
                                                 container: '.modal-body',
@@ -288,7 +308,7 @@ var searchjson = function(q, cnt) {
  * Refresh the 't' (type 'irc' or 'url') component
  */
 var _refresh = function(t) {
-    _getjson(t, undefined);
+    _getjson(t, false);
 
     /* must be refreshed for every new entry */
     $('[data-toggle="popover"]').popover({
@@ -316,6 +336,9 @@ var _refresh_stats = function() {
     $('#stats').html(stats);
 }
 
+/**
+ * Get channel informations: topic, users, ops
+ */
 var _refresh_chaninfos = function() {
     var chaninfos_url = '{{ url_for("chaninfos") }}';
 
@@ -376,13 +399,16 @@ var _check_height = function(t) {
     var live = $('.' + t + 'live'); /* full div */
 
     live.scroll(function() {
-        /* user is at the bottom of div  */
         var livepos = live.prop('scrollTop') + live.prop('offsetHeight');
-        if (livepos >= live.prop('scrollHeight')) {
-            live.css('border-bottom', std_border_bottom);
-        }
+        /* user is at the bottom of div  */
+        if (livepos >= live.prop('scrollHeight'))
+            if (onair)
+                live.css('border-bottom', std_border_bottom);
+            else
+                searchjson(searchval, '.irclive', true)
+                
         /* user is on top of div, load previous lines */
-        if (live.prop('scrollTop') == 0)
+        if (onair && live.prop('scrollTop') == 0)
             _getjson(t, true);
     });
 }
@@ -403,16 +429,16 @@ $(function() {
     _refresh_chaninfos();
     $.each(['irc', 'url'], function() {
         _refresh(this);
-    //    _check_height(this);
+        _check_height(this);
     });
 
     /* main search */
-    var search = $('input[class="form-control"]');
-    search.keypress(function(event) {
+    var searchform = $('input[class="form-control"]');
+    searchform.keypress(function(event) {
         if (event.which == 13) {
             /* no date specified */
             onair = false;
-            searchjson(search.val(), '.irclive');
+            searchjson(searchform.val(), '.irclive', false);
             /* needed so the modal does not disappear */
             return false;
         };
