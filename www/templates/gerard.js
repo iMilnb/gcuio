@@ -269,6 +269,8 @@ var _getjson = function(t, todate) {
  * query, true if we are to fetch next results
  */
 var searchjson = function(q, cnt, more) {
+    /* stop updating IRC window, no more scrollback */
+    onair = false;
     /* record the search for scroll down / _getheight */
     searchval = q;
     /* wipe old content */
@@ -437,7 +439,6 @@ $(function() {
     searchform.keypress(function(event) {
         if (event.which == 13) {
             /* no date specified */
-            onair = false;
             searchjson(searchform.val(), '.irclive', false);
             /* needed so the modal does not disappear */
             return false;
