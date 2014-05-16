@@ -205,8 +205,8 @@ var process_urlline = function(data, lastdate, cnt, pos) {
     
 }
 
-var _getratio = function(cnt) {
-        return cnt.children('.ircline').length / {{ nlines }};
+var _getratio = function(t) {
+    return $('.' + t + 'live').children('.' + t + 'line').length / {{ nlines }};
 }
 
 /**
@@ -258,7 +258,7 @@ var _getjson = function(t, todate) {
 
     /* proportional positionning if we're going back in history */
     if (todate)
-        live.prop({ scrollTop: live.prop('scrollHeight') / _getratio(live) })
+        live.prop({ scrollTop: live.prop('scrollHeight') / _getratio(t) })
 
     /* record last scrollHeight */
     this['sh_' + t] = live.prop('scrollHeight');
@@ -296,7 +296,7 @@ var searchjson = function(q, cnt, more) {
 
     if (total > {{ nlines }} && more) {
         var sh = $(cnt).prop('scrollHeight');
-        $(cnt).prop({ scrollTop: sh - (sh / _getratio($(cnt))) })
+        $(cnt).prop({ scrollTop: sh - (sh / _getratio('irc')) })
     }
     if (!total)
         $(cnt).css('background-image',
