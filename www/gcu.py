@@ -244,7 +244,7 @@ def atomfeed():
 
     print(t)
     r = get_last(t)
-    if not r.status_code == 200 and len(r.response) > 0:
+    if not (r.status_code == 200 and len(r.response) > 0):
         return {}
 
     j = json.loads(r.response[0])

@@ -73,7 +73,7 @@ class TwiStreamer(TwythonStreamer):
                         self.ircbot.privmsg(k, out)
 
     def on_error(self, status_code, data):
-        loggin.warn(status_code, data)
+        logger.warn(status_code, data)
 
 
 class CustomLineBuffer(irc.client.LineBuffer):
