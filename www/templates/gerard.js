@@ -294,7 +294,7 @@ var searchjson = function(q, cnt, more) {
     $('#topic').html(total + ' r&eacute;sultats');
     $('#backtolive').css('display', 'inline');
 
-    if (more) {
+    if (total > {{ nlines }} && more) {
         var sh = $(cnt).prop('scrollHeight');
         $(cnt).prop({ scrollTop: sh - (sh / _getratio($(cnt))) })
     }
