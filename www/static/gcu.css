@@ -72,7 +72,7 @@ body {
     font-family: monospace;
     background: #303035;
     border: 1px solid #222;
-    padding: 5px;
+    padding: 8px;
     border-radius: 5px;
 }
 
@@ -84,7 +84,7 @@ body {
     font-family: monospace;
     background: #303035;
     border: 1px solid #222;
-    padding: 5px;
+    padding: 8px;
     border-radius: 5px;
 }
 
@@ -99,4 +99,8 @@ body {
 .userinfos {
     line-height: 20px;
     margin-top: 2px;
+}
+
+#backtolive {
+    font-size: 10px;
 }
