@@ -298,11 +298,10 @@ var searchjson = function(q, cnt, more) {
         var sh = $(cnt).prop('scrollHeight');
         $(cnt).prop({ scrollTop: sh - (sh / _getratio($(cnt))) })
     }
-    if (!total) {
+    if (!total)
         $(cnt).css('background-image',
                    'url({{ url_for("images", filename="trollface.png") }})');
-        $(cnt).css('background-size', '100%');
-    } else
+    else
         $(cnt).css('background-image', 'none');
 
     $(cnt + ' [data-toggle="popover"]').popover({

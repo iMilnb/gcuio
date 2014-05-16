@@ -15,6 +15,9 @@ body {
     overflow: auto;
     font-family: monospace;
     background: #111;
+    background-image: none;
+    background-size: 100%;
+    background-repeat: no-repeat;
 }
 .line {
     margin-left: 5px;
