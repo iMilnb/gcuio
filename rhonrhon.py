@@ -149,6 +149,9 @@ class Bot(irc.bot.SingleServerIRCBot):
             tags += map(lambda x: x.strip(' '), tagsub.strip(' #').split(','))
             pl = re.sub(tagmatch, ' ', pl).rstrip(' ')
 
+        if 'nolog' in tags:
+            return
+
         urls = re.findall('(https?://[^\s]+)', pl)
 
         has_nick = False
