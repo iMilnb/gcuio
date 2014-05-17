@@ -219,7 +219,7 @@ def short_url():
     s = base64.b64encode(x.digest()[-4:]).decode('utf-8')
     s = s.replace('=', '').replace('/', '_')
 
-    return Response(json.dumps({url: s}))
+    return Response(json.dumps({url: s}), mimetype='application/json')
 
 
 @app.route('/status', methods=['GET'])
@@ -233,7 +233,7 @@ def status():
         a = re.sub('\n.+', '', r.text.lower()).strip().split(': ')
         ret = {a[0].replace(' ', '_'): a[1]}
 
-    return Response(json.dumps(ret))
+    return Response(json.dumps(ret), mimetype='application/json')
 
 
 @app.route('/atomfeed', methods=['GET'])

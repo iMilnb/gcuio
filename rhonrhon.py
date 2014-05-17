@@ -68,7 +68,9 @@ class TwiStreamer(TwythonStreamer):
                     if re.search(twichans[k], data['text']):
                         s = data['user']['screen_name']
                         n = data['user']['name']
-                        out = '<@{0} ({1})> {2}'.format(s, n, data['text'])
+                        t = data['text'].replace('\n', ' ')
+                        out = '<@{0} ({1})> {2}'.format(s, n, t)
+                        out = out[0:512]
 
                         self.ircbot.privmsg(k, out)
 
@@ -201,11 +203,21 @@ class Bot(irc.bot.SingleServerIRCBot):
         self.do_cmd(serv, s)
 
     def start_track(self, serv):
-        self.stream = TwiStreamer(APP_KEY, APP_SECRET,
-                                  OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-        self.stream.ircbot = serv
-        target = ','.join(twichans.values())
-        self.stream.statuses.filter(track=target)
+        try:
+            self.stream = TwiStreamer(APP_KEY, APP_SECRET,
+                                      OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+            self.stream.ircbot = serv
+            target = ','.join(twichans.values())
+            self.stream.statuses.filter(track=target)
+        except Exception, e:
+            logger.warn(e)
+
+            # mark twitter as not disable
+            tweetrelay = False
+
+            # cleanup thread in order to be able to restart
+            self.t = None
+
 
     def do_cmd(self, serv, cmd):
         global tweetrelay
