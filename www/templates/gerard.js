@@ -221,7 +221,7 @@ var _getjson = function(t, todate) {
 
     if (todate) { /* todate was given, we're fetching previous results */
         lastdate = $('.' + t + 'line').first().attr('id');
-        get_last += '&k=to';
+        get_last += '&x=to';
         action = 'prepend';
     } else { /* normal call, fetch last entries */
         lastdate = $('.' + t + 'line').last().attr('id');

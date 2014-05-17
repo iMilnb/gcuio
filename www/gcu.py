@@ -5,6 +5,7 @@ import base64
 import hashlib
 import requests
 import datetime
+import itertools
 from flask import Flask, render_template, request, url_for, json, Response
 from werkzeug.contrib.atom import AtomFeed
 from elasticsearch import Elasticsearch
@@ -26,20 +27,18 @@ ircline_style = {
     'tags': 'btn btn-sm btn-warning'
 }
 
+rqueries = {
+    'n': 'nick:',
+    't': 'tags:',
+    'l': 'line:',
+    'u': 'urls:',
+    'from': 'date:>',
+    'to:': 'date:<'
+}
+
 # match ISO format - datetime.datetime.utcnow().isoformat()
 # i.e. 2014-04-30T18:22:42.596996
 isodaterx = '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+$'
-
-
-def _mkroute(func=None, rules=[], methods=[]):
-    '''
-    Generate routes for multiples and optional REST-style parameters
-    '''
-    p = ''
-    r = ['/{0}'.format(func)] + rules
-    for rule in r:
-        p = ''.join([p, rule])
-        app.add_url_rule(p, func, view_func=eval(func), methods=methods)
 
 
 def _res_sort(res):
@@ -49,7 +48,7 @@ def _res_sort(res):
     return sorted(res['hits']['hits'], key=lambda getkey: getkey['sort'][0])
 
 
-def _get_body(t, k, d):
+def _get_body(t, x, d):
     fd = ''
     if d:
         fd = '_date'
@@ -57,7 +56,7 @@ def _get_body(t, k, d):
     ircbody = {'size': nlines, 'sort': [{'fulldate': {'order': 'desc'}}]}
     ircbody_date = {
         'query': {
-            'range': {'fulldate': {k: d}}
+            'range': {'fulldate': {x: d}}
         },
         'sort': [{'fulldate': {'order': 'desc'}}],
         'size': nlines
@@ -74,7 +73,7 @@ def _get_body(t, k, d):
             'bool': {
                 'must': [
                     {'match': {'urls': 'http https www'}},
-                    {'range': {'fulldate': {k: d}}},
+                    {'range': {'fulldate': {x: d}}},
                 ],
             },
         },
@@ -91,8 +90,21 @@ def _get_body(t, k, d):
     return ret
 
 
-# No app.route decorator, routes are generated through _mkroute
-def get_last(t=None, k=None, d=None):
+def _mkrstget(path, l):
+    a = path.split('/')
+
+    res = l * [None]
+    pathlen = len(a)
+    if not pathlen > l:
+        for i in range(pathlen):
+            res[i] = a[i]
+
+    return res
+
+
+@app.route('/get_last', methods=['GET'])
+@app.route('/g/<path:path>', methods=['GET'])
+def get_last(path=None):
     '''
     AJAX resource, retrieves latest type lines, or since 'fromdate'
 
@@ -103,31 +115,38 @@ def get_last(t=None, k=None, d=None):
 
     or
 
-    curl http://localhost:5000/get_last/irc/from/2014-05-14T16:05:06.154931
+    curl http://localhost:5000/g/irc/from/2014-05-14T16:05:06.154931
     '''
 
     allow_t = ['irc', 'url']
-    allow_k = ['from', 'to']
-    if d is None:
-        d = request.args.get('d')
+    allow_x = ['from', 'to']
+
+    t = x = d = None;
+
+    if path:
+        [t, x, d] = _mkrstget(path, 3)
+
     if t is None:
         t = request.args.get('t')
-    if k is None:
-        k = request.args.get('k')
+    if x is None:
+        x = request.args.get('x')
+    if d is None:
+        d = request.args.get('d')
 
-    if not k:
-        k = 'from'
+    if not x:
+        x = 'from'
+
 
     rep = []
-    if t in allow_t and k in allow_k:
+    if t in allow_t and x in allow_x:
         if d and not re.search(isodaterx, d):
             d = ''
 
-        s_body = _get_body(t, k, d)
+        s_body = _get_body(t, x, d)
 
         try:  # catch anything to ES
             res = es.search(index=es_idx, doc_type=channel, body=s_body)
-            if k == 'from':
+            if x == 'from':
                 rep = _res_sort(res)
             else:  # if fetching items to a date, we will prepend them as-is
                 rep = res['hits']['hits']
@@ -139,12 +158,32 @@ def get_last(t=None, k=None, d=None):
     return Response(json.dumps(rep), mimetype='application/json')
 
 
-@app.route('/search', methods=['GET'])
-def search():
-    rep = {'total': 0, 'hits': []}
+def _mkrstquery(path):
+    q = []
+    res = ''
 
-    # no query
-    if not request.args.get('q'):
+    a = path.split('/')
+
+    if len(a) % 2:
+        return res
+
+    # a = ['n', 'iMil', 't', 'nsfw']
+    for i in range(0, len(a), 2):
+        if a[i] in rqueries:
+            q.append('{0}{1}'.format(rqueries[a[i]], a[i+1]))
+
+    return ' AND '.join(q)
+
+
+@app.route('/search', methods=['GET'])
+@app.route('/s/<path:path>', methods=['GET'])
+def search(path=None):
+    rep = {'total': 0, 'hits': []}
+    q = ''
+
+    if path:
+        q =_mkrstquery(path)
+    elif not request.args.get('q'):
         return json.dumps(rep)
 
     if request.args.get('f') and request.args.get('f').isdigit():
@@ -152,9 +191,10 @@ def search():
     else:
         f = 0
 
-    q = request.args.get('q')
+    if not q:
+        q = request.args.get('q')
 
-    if len(q) < 4:  # avoid short searches
+    if not q or len(q) < 4:  # avoid short searches
         return json.dumps(rep)
 
     # alias to make grrrreg happy
@@ -287,8 +327,6 @@ def home():
     return render_template('gerard.js',
                            ircline_style=ircline_style, nlines=nlines)
 
-# generate routes for multi-options URIs
-_mkroute(func='get_last', rules=['/<t>', '/<k>', '/<d>'], methods=['GET'])
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == '-d':
