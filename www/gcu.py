@@ -5,7 +5,6 @@ import base64
 import hashlib
 import requests
 import datetime
-import itertools
 from flask import Flask, render_template, request, url_for, json, Response
 from werkzeug.contrib.atom import AtomFeed
 from elasticsearch import Elasticsearch
@@ -135,7 +134,6 @@ def get_last(path=None):
 
     if not x:
         x = 'from'
-
 
     rep = []
     if t in allow_t and x in allow_x:
