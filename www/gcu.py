@@ -33,7 +33,7 @@ rqueries = {
     'l': 'line:',
     'u': 'urls:',
     'from': 'date:>',
-    'to:': 'date:<'
+    'to': 'date:<'
 }
 
 # match ISO format - datetime.datetime.utcnow().isoformat()
@@ -282,7 +282,6 @@ def atomfeed():
     if not t:
         t = 'url'
 
-    print(t)
     r = get_last(t)
     if not (r.status_code == 200 and len(r.response) > 0):
         return {}
@@ -317,7 +316,6 @@ def fonts(filename):
 
 @app.route('/images/<path:filename>')
 def images(filename):
-    print(os.path.join('images', filename))
     return app.send_static_file(os.path.join('images', filename))
 
 
