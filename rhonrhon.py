@@ -46,7 +46,17 @@ from daemonize import Daemonize
 #
 # twichans = { '#mychan': 'MyTrack', '#otherchan': 'AnotherTrack' }
 
-exec(open(os.path.expanduser("~") + '/.rhonrhonrc').read())
+def has_expected_mode(path, mode):
+    from stat import S_IMODE
+    st = os.stat(path)
+    return S_IMODE(st.st_mode) == mode
+
+configFile = os.path.expanduser("~") + '/.rhonrhonrc'
+if not has_expected_mode(configFile, 0600):
+    print("err: invalid mode on configFile", configFile)
+    sys.exit(2)
+
+exec(open(configFile).read())
 
 es = Elasticsearch(es_nodes)
 
