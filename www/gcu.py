@@ -91,14 +91,8 @@ def _get_body(t, x, d):
 
 def _mkrstget(path, l):
     a = path.split('/')
-
-    res = l * [None]
-    pathlen = len(a)
-    if not pathlen > l:
-        for i in range(pathlen):
-            res[i] = a[i]
-
-    return res
+    a.extend(l * [None])
+    return a[:l]
 
 
 @app.route('/get_last', methods=['GET'])
