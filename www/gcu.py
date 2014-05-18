@@ -330,7 +330,7 @@ def sitemap():
     last = get_last_dict('irc')
     if last and len(last) > 0 and '_source' in last[-1]:
         entry = last[-1]['_source']
-        lastmod = '{0}T{1}'.format(entry['date'], entry['time'])
+        lastmod = '{0}T{1}+00:00'.format(entry['date'], entry['time'])
 
     sitemap = render_template('sitemap.xml', lastmod=lastmod)
     return Response(sitemap, mimetype='application/xml')
