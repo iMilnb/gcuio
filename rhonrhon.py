@@ -154,7 +154,7 @@ class Bot(irc.bot.SingleServerIRCBot):
 
         match = re.search('^!tweet\s(.*)$', pl, re.I)
         if match:
-            if not ev.source.nick in self.auth or auth[ev.source.nick]['twitter'] != True:
+            if not ev.source.nick in self.auth and auth[ev.source.nick]['twitter'] == True:
                 serv.privmsg(ev.target, "no.")
                 return
             msg = match.group(1)
