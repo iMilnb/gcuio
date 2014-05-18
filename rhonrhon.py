@@ -13,7 +13,9 @@ import signal
 from logging.handlers import RotatingFileHandler
 from elasticsearch import Elasticsearch
 from threading import Thread
+from twython import Twython
 from twython import TwythonStreamer
+from twython import TwythonError, TwythonRateLimitError, TwythonAuthError
 from daemonize import Daemonize
 
 # ~/.rhonrhonrc example
@@ -148,6 +150,23 @@ class Bot(irc.bot.SingleServerIRCBot):
         pl = ev.arguments[0].strip()
 
         if (re.search('[\[#]\ *nolog\ *[#\]]', pl, re.I)) or 'nolog' in nick:
+            return
+
+        match = re.search('^!tweet\s(.*)$', pl, re.I)
+        if match:
+            if not ev.source.nick in self.auth or auth[ev.source.nick]['twitter'] is not True:
+                serv.privmsg(ev.target, "no.")
+                return
+            msg = match.group(1)
+            if (len(msg) > 140):
+                serv.privmsg(ev.target, "too long.")
+                return
+            twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+            try:
+                twitter.update_status(status=msg)
+                logger.info(ev.source.nick + " updated twitter: " + msg)
+            except TwythonAuthError:
+                logger.warn("twitter: can't authenticate")
             return
 
         date, clock = full_date.isoformat().split('T')
