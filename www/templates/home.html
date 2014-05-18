@@ -8,9 +8,12 @@
       {% set entry = item['_source'] %}
       <div class="{{ t }}line">
         [{{entry['date']}}T{{ entry['time'] }}]
-        &lt;{{ entry['nick'] }}&gt; {{ entry['line'] }}
+        <a href="#!nick={{ entry['nick'] }}">
+        &lt;{{ entry['nick'] }}&gt;</a>
+        {{ entry['line'] }}
         {% for tag in entry['tags'] -%}
-          #{{ tag }}&nbsp;
+          <a href="#!tags={{ tag }}">
+          #{{ tag }}</a>&nbsp;
         {%- endfor %} <!-- tags -->
       </div>
     {% endif %} <!-- if _source -->

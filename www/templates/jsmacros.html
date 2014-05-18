@@ -3,8 +3,10 @@ if (source.{{ name }}) {
     ircline += '<span class="{{ name }}">';
     ircline += '<a ';
     if ('{{ name }}' != 'time') {
-        ircline += 'href="#" onclick="searchjson(';
-        ircline += '\'{{ name }}:' + escape_html(encodeURIComponent(source.{{ name }}).replace(/'/g,'\\\'')) + '\'';
+        var psname = escape_html(encodeURIComponent(source.{{ name }}));
+        psname = psname.replace(/'/g,'\\\'');
+        ircline += 'href="#!{{ name }}=' + psname + '" onclick="searchjson(';
+        ircline += '\'{{ name }}:' + psname + '\'';
         ircline += ', \'.irclive\', false); return false;" ';
     } else {
         var tweet = mktweeturl(source);
@@ -26,9 +28,10 @@ if (source.{{ name }} && source.{{ name }}[0]) {
         ircline += '<span class="glyphicon glyphicon-chevron-right"></span>';
     ircline += '<span class="{{ name }}">'
     $.each(source.{{ name }}, function() {
-        ircline += '<a href="#" ';
+        var psname = escape_html(encodeURIComponent(this).replace(/'/g,'\\\''));
+        ircline += '<a href="#!{{ name }}=' + psname + '" ';
         ircline += 'onclick="searchjson(';
-        ircline += '\'{{ name }}:' + escape_html(encodeURIComponent(this).replace(/'/g,'\\\'')) + '\'';
+        ircline += '\'{{ name }}:' + psname + '\'';
         ircline += ', \'.irclive\', false); return false;" ';
         ircline += 'role="button" class="{{ style[name] }}">';
         ircline += escape_html(this);

@@ -310,19 +310,6 @@ def fonts(filename):
 def images(filename):
     return app.send_static_file(os.path.join('images', filename))
 
-def get_last_dict(path):
-    resp = get_last(path)
-    if resp and resp.status_code == 200:
-        return json.loads(resp.data)
-    return None
-
-def static_fetch():
-    content = {'irc': None, 'url': None}
-    for c in content.keys():
-        content[c] = get_last_dict(c)
-
-    return content
-
 
 @app.route('/sitemap.xml')
 def sitemap():
@@ -335,6 +322,50 @@ def sitemap():
     sitemap = render_template('sitemap.xml', lastmod=lastmod)
     return Response(sitemap, mimetype='application/xml')
 
+# Crawler related functions
+
+def get_last_dict(path):
+    resp = get_last(path)
+    if resp and resp.status_code == 200:
+        return json.loads(resp.data)
+    return None
+
+
+def static_main():
+    content = {'irc': [], 'url': []}
+    for c in content.keys():
+        content[c] = get_last_dict(c)
+
+    return content
+
+
+def static_search(ef):
+    content = {'irc': [], 'url': []}
+    [k, v] = ef.split('=')
+
+    for rk, rv in rqueries.items():
+        rv = rv[:-1]  # remove :
+        if re.search(rv, k):  # 'nick' can match 'nick' and 'tonick'
+            resp = search('/'.join([rk, v]))
+            if resp and resp.status_code == 200:
+                data = json.loads(resp.data)
+                if 'hits' in data:
+                    content['irc'] = data['hits']
+
+    return content
+
+
+def static_fetch(ef):
+    '''
+    This is used only for crawlers (read: google) indexing, see:
+    https://developers.google.com/webmasters/ajax-crawling/docs/getting-started
+    '''
+    if not ef or not '=' in ef:
+        return static_main()
+    if '=' in ef:
+        return static_search(ef)
+    return None
+
 
 @app.route('/', methods=['GET'])
 def home():
@@ -343,7 +374,7 @@ def home():
     # enable crawler browsing
     ef = request.args.get('_escaped_fragment_')
     if ef is not None:
-        content = static_fetch()
+        content = static_fetch(ef)
 
     return render_template('gerard.js',
                            ircline_style=ircline_style,
