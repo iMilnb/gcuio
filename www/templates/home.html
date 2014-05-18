@@ -7,6 +7,7 @@
     {% if '_source' in item %}
       {% set entry = item['_source'] %}
       <div class="{{ t }}line">
+        [{{entry['date']}}T{{ entry['time'] }}]
         &lt;{{ entry['nick'] }}&gt; {{ entry['line'] }}
         {% for tag in entry['tags'] -%}
           #{{ tag }}&nbsp;
@@ -46,8 +47,8 @@
       <div class="list-group urllive">
         {{ static_content('url') }}
       </div>
-    </div>
-  </div>
-</div>
+    </div> <!-- lotd -->
+  </div> <!-- row -->
+</div> <!-- container -->
 
 {% endblock %}
