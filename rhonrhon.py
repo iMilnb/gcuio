@@ -52,7 +52,7 @@ def has_expected_mode(path, mode):
     return S_IMODE(st.st_mode) == mode
 
 configFile = os.path.expanduser("~") + '/.rhonrhonrc'
-if not has_expected_mode(configFile, 0600):
+if not has_expected_mode(configFile, 0o600):
     print("err: invalid mode on configFile", configFile)
     sys.exit(2)
 
