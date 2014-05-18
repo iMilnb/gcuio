@@ -154,7 +154,7 @@ class Bot(irc.bot.SingleServerIRCBot):
 
         match = re.search('^!tweet\s(.*)$', pl, re.I)
         if match:
-            if not ev.source.nick in self.auth and auth[ev.source.nick]['twitter'] == True:
+            if not ev.source.nick in self.auth or auth[ev.source.nick]['twitter'] is not True:
                 serv.privmsg(ev.target, "no.")
                 return
             msg = match.group(1)
@@ -164,7 +164,7 @@ class Bot(irc.bot.SingleServerIRCBot):
             twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
             try:
                 twitter.update_status(status=msg)
-                logger.info(ev.source.nick + " updated twitter:" + msg)
+                logger.info(ev.source.nick + " updated twitter: " + msg)
             except TwythonAuthError:
                 logger.warn("twitter: can't authenticate")
             return
