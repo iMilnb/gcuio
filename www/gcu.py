@@ -311,11 +311,29 @@ def images(filename):
     return app.send_static_file(os.path.join('images', filename))
 
 
-@app.route('/')
+def static_fetch():
+    content = {'irc': None, 'url': None}
+    for c in content.keys():
+        resp = get_last(path=c)
+        if resp and resp.status_code == 200:
+            content[c] = json.loads(resp.data)
+
+    return content
+
+
+@app.route('/', methods=['GET'])
 def home():
 
+    content = None
+    # enable crawler browsing
+    ef = request.args.get('_escaped_fragment_')
+    if ef is not None:
+        content = static_fetch()
+
     return render_template('gerard.js',
-                           ircline_style=ircline_style, nlines=nlines)
+                           ircline_style=ircline_style,
+                           nlines=nlines,
+                           content=content)
 
 
 if __name__ == "__main__":

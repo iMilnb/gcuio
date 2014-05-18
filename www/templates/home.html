@@ -1,6 +1,22 @@
 {% extends "layout.html" %}
 {% block body %}
 
+{% macro static_content(t) %}
+{% if content and t in content %}
+  {% for item in content[t] %}
+    {% if '_source' in item %}
+      {% set entry = item['_source'] %}
+      <div class="{{ t }}line">
+        &lt;{{ entry['nick'] }}&gt; {{ entry['line'] }}
+        {% for tag in entry['tags'] -%}
+          #{{ tag }}&nbsp;
+        {%- endfor %} <!-- tags -->
+      </div>
+    {% endif %} <!-- if _source -->
+  {% endfor %} <!-- for item -->
+{% endif %} <!-- if content -->
+{% endmacro %}
+
 <div class="container fullheight">
   <div class="row-fluid fullheight">
     <div class="col-xs-12 col-md-8 fullheight">
@@ -17,6 +33,7 @@
         </div>
       </h6>
       <div class="well well-sm irclive">
+        {{ static_content('irc') }}
       </div>
     </div>
     <div class="col-xs-12 col-md-4 fullheight">
@@ -27,6 +44,7 @@
       </a>
       </h6>
       <div class="list-group urllive">
+        {{ static_content('url') }}
       </div>
     </div>
   </div>
