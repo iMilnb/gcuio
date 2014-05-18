@@ -5,7 +5,7 @@ if (source.{{ name }}) {
     if ('{{ name }}' != 'time') {
         var psname = escape_html(encodeURIComponent(source.{{ name }}));
         psname = psname.replace(/'/g,'\\\'');
-        ircline += 'href="#!{{ name }}=' + psname + '" onclick="searchjson(';
+        ircline += 'href="#" onclick="searchjson(';
         ircline += '\'{{ name }}:' + psname + '\'';
         ircline += ', \'.irclive\', false); return false;" ';
     } else {
@@ -29,7 +29,7 @@ if (source.{{ name }} && source.{{ name }}[0]) {
     ircline += '<span class="{{ name }}">'
     $.each(source.{{ name }}, function() {
         var psname = escape_html(encodeURIComponent(this).replace(/'/g,'\\\''));
-        ircline += '<a href="#!{{ name }}=' + psname + '" ';
+        ircline += '<a href="#" ';
         ircline += 'onclick="searchjson(';
         ircline += '\'{{ name }}:' + psname + '\'';
         ircline += ', \'.irclive\', false); return false;" ';
