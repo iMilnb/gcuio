@@ -329,7 +329,8 @@ def sitemap():
     lastmod = '1970-01-01'
     last = get_last_dict('irc')
     if last and len(last) > 0 and '_source' in last[-1]:
-        lastmod = last[-1]['_source']['fulldate']
+        entry = last[-1]['_source']
+        lastmod = '{0}T{1}'.format(entry['date'], entry['time'])
 
     sitemap = render_template('sitemap.xml', lastmod=lastmod)
     return Response(sitemap, mimetype='application/xml')
