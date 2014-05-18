@@ -209,7 +209,7 @@ class Bot(irc.bot.SingleServerIRCBot):
             self.stream.ircbot = serv
             target = ','.join(twichans.values())
             self.stream.statuses.filter(track=target)
-        except Exception, e:
+        except Exception as e:
             logger.warn(e)
 
             # mark twitter as not disable
