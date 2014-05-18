@@ -28,7 +28,7 @@ Search for latest comments made by nickname `foo`:
 
 Search for latest comments by `bar` with the `nsfw` tag:
 
-    $ curl 'gcu.io/s/n/bar/t/nsfw
+    $ curl 'gcu.io/s/n/bar/t/nsfw'
 
 Search for lines containing `curl` from and to certain dates:
 
