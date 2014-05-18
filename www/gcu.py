@@ -310,15 +310,29 @@ def fonts(filename):
 def images(filename):
     return app.send_static_file(os.path.join('images', filename))
 
+def get_last_dict(path):
+    resp = get_last(path)
+    if resp and resp.status_code == 200:
+        return json.loads(resp.data)
+    return None
 
 def static_fetch():
     content = {'irc': None, 'url': None}
     for c in content.keys():
-        resp = get_last(path=c)
-        if resp and resp.status_code == 200:
-            content[c] = json.loads(resp.data)
+        content[c] = get_last_dict(c)
 
     return content
+
+
+@app.route('/sitemap.xml')
+def sitemap():
+    lastmod = '1970-01-01'
+    last = get_last_dict('irc')
+    if last and len(last) > 0 and '_source' in last[-1]:
+        lastmod = last[-1]['_source']['fulldate']
+
+    sitemap = render_template('sitemap.xml', lastmod=lastmod)
+    return Response(sitemap, mimetype='application/xml')
 
 
 @app.route('/', methods=['GET'])
