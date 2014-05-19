@@ -31,6 +31,7 @@ rqueries = {
     't': 'tags:',
     'l': 'line:',
     'u': 'urls:',
+    'date': 'date:',
     'from': 'date:>',
     'to': 'date:<'
 }
