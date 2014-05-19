@@ -163,7 +163,11 @@ class Bot(irc.bot.SingleServerIRCBot):
                 return
             twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
             try:
-                twitter.update_status(status=msg)
+                data = twitter.update_status(status=msg)
+                s = data['user']['screen_name']
+                i = data['id']
+                out = 'Status updated: https://twitter.com/{0}/status/{1}'.format(s, i)
+                serv.privmsg(ev.target, out)
                 logger.info(ev.source.nick + " updated twitter: " + msg)
             except TwythonAuthError:
                 logger.warn("twitter: can't authenticate")
