@@ -455,6 +455,7 @@ $(function() {
         $('#irclive').css('font-family', 'Comic Sans MS');
     }
 
+    /* escaped fragment, crawler hashes */
     var hash = window.location.hash;
     var ef = hash.match(/^#!([^=]+)=([^=]+)/);
     if (hash && ef)
