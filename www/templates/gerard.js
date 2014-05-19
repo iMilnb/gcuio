@@ -450,6 +450,16 @@ $(function() {
         };
     });
 
+    /* windows users must have a special treatment. */
+    if (navigator.platform.match(/win(32|64|dows)/gi)) {
+        $('#irclive').css('font-family', 'Comic Sans MS');
+    }
+
+    var hash = window.location.hash;
+    var ef = hash.match(/^#!([^=]+)=([^=]+)/);
+    if (hash && ef)
+        searchjson(ef[1] + ':' + ef[2], 'irc', false);
+
     /* set the timer to refresh data every 8 seconds */
     var auto_refresh = setInterval(function() {
         _refresh_stats();
@@ -458,11 +468,6 @@ $(function() {
         if (onair)
             _refresh('irc');
     }, 8000);
-
-    /* windows users must have a special treatment. */
-    if (navigator.platform.match(/win(32|64|dows)/gi)) {
-        $('#irclive').css('font-family', 'Comic Sans MS');
-    }
 
 });
 {% endblock %}
