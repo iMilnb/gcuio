@@ -7,7 +7,7 @@ body {
     height: 100%;
 }
 .fullheight {
-    height: 100%;
+    height: 98%;
 }
 .irclive {
     padding: 5px;
@@ -103,4 +103,8 @@ body {
 
 #backtolive {
     font-size: 10px;
+}
+
+.rowsep {
+    margin-top: 10px;
 }
