@@ -11,6 +11,7 @@ body {
     height: 100%;
 }
 
+/* mainheigh (main row), irclive and urllive have the same height */
 .mainheight {
     height: 98%;
 }
