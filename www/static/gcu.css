@@ -12,12 +12,12 @@ body {
 }
 
 .mainheight {
-    height: 98%;
+    height: 95%;
 }
 
 .irclive {
     padding: 5px;
-    height: 98%;
+    height: 95%;
     overflow: auto;
     font-family: monospace;
     background: #111;
@@ -33,7 +33,7 @@ body {
 }
 
 .urllive {
-    height: 98%;
+    height: 95%;
     overflow: auto;
     font-family: monospace;
 }
