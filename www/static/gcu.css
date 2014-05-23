@@ -2,21 +2,22 @@ html {
     height: 100%;
 }
 body {
-    padding-top: 70px;
-    padding-bottom: 100px;
+    padding-top: 60px;
+    padding-bottom: 60px;
     height: 100%;
 }
+
 .fullheight {
     height: 100%;
 }
 
 .mainheight {
-    height: 98%;
+    height: 92%;
 }
 
 .irclive {
     padding: 5px;
-    height: 95%;
+    height: 92%;
     overflow: auto;
     font-family: monospace;
     background: #111;
@@ -32,7 +33,7 @@ body {
 }
 
 .urllive {
-    height: 95%;
+    height: 92%;
     overflow: auto;
     font-family: monospace;
 }
@@ -48,14 +49,6 @@ body {
 
 .popover.left .arrow:after {
     border-left-color: #222;
-}
-
-.modal-dialog {
-    width: 60%;
-}
-
-.modal-body {
-    font-family: monospace;
 }
 
 .bigger-label {
