@@ -248,7 +248,7 @@ var _getjson = function(t, todate) {
             fn(data, lastdate, '.' + t + 'live', action);
     });
 
-    /* autoscroll only if we're at the bottom (i.e. now scrolling) */
+    /* autoscroll only if we're at the bottom (i.e. not scrolling) */
     if (!lastdate || doscroll) {
         /* autoscroll to bottom */
         live.prop({ scrollTop: live.prop('scrollHeight') });
@@ -460,6 +460,11 @@ $(function() {
     var ef = hash.match(/^#!([^=]+)=([^=]+)/);
     if (hash && ef)
         searchjson(ef[1] + ':' + ef[2], 'irc', false);
+
+    /* insert shameless ad on the IRC channel */
+    var ad = $('#adsense').html();
+    $('.irclive').append(ad);
+    $('.irclive').prop({ scrollTop: $('.irclive').prop('scrollHeight') });
 
     /* set the timer to refresh data every 8 seconds */
     var auto_refresh = setInterval(function() {

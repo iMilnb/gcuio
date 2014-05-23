@@ -11,7 +11,10 @@ body {
     height: 100%;
 }
 
-/* mainheigh (main row), irclive and urllive have the same height */
+/**
+ * mainheigh (main row), irclive and urllive have the same height so we display
+ * IRC-like scrollable divs
+ */
 .mainheight {
     height: 95%;
 }
@@ -104,7 +107,6 @@ body {
     font-size: 10px;
 }
 
-.adsrow {
-    margin-top: 3px;
-    text-align: center;
+.ad {
+    background: #202020;
 }
