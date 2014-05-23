@@ -452,7 +452,7 @@ $(function() {
 
     /* windows users must have a special treatment. */
     if (navigator.platform.match(/win(32|64|dows)/gi)) {
-        $('#irclive').css('font-family', 'Comic Sans MS');
+        $('.irclive').css('font-family', 'Comic Sans MS');
     }
 
     /* escaped fragment, crawler hashes */
