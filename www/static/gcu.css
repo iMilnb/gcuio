@@ -102,3 +102,8 @@ body {
 #backtolive {
     font-size: 10px;
 }
+
+.adsrow {
+    margin-top: 3px;
+    text-align: center;
+}
