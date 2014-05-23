@@ -48,6 +48,7 @@ from daemonize import Daemonize
 #
 # twichans = { '#mychan': 'MyTrack', '#otherchan': 'AnotherTrack' }
 
+
 def has_expected_mode(path, mode):
     from stat import S_IMODE
     st = os.stat(path)
@@ -144,6 +145,56 @@ class Bot(irc.bot.SingleServerIRCBot):
     def on_kick(self, serv, ev):
         self.chanjoin(serv)
 
+    def handle_pubcmd(self, serv, ev):
+        '''
+        Handle public IRC bot-style commands e.g. !foo
+        '''
+        pl = ev.arguments[0].strip()
+        nickauth = {}
+        # nick is registered, get it's auth dict entry in conf file
+        if ev.source.nick in self.auth:
+            nickauth = auth[ev.source.nick]
+
+        # public tweets
+        match = re.search('^!tweet\s(.*)$', pl, re.I)
+        if match:
+            if 'twitter' in nickauth and nickauth['twitter'] is True:
+                msg = match.group(1)
+                if (len(msg) > 140):
+                    serv.privmsg(ev.target, "too long.")
+                    return
+                twitter = Twython(APP_KEY,
+                                  APP_SECRET,
+                                  OAUTH_TOKEN,
+                                  OAUTH_TOKEN_SECRET)
+                try:
+                    data = twitter.update_status(status=msg)
+                    s = data['user']['screen_name']
+                    i = data['id']
+                    out = 'Status updated: https://twitter.com/{0}/status/{1}'
+                    out = out.format(s, i)
+                    serv.privmsg(ev.target, out)
+                    logger.info(ev.source.nick + " updated twitter: " + msg)
+                except TwythonAuthError:
+                    logger.warn("twitter: can't authenticate")
+            else:
+                serv.privmsg(ev.target, "no.")
+            # return True anyway as we don't want to record that line
+            return True
+
+        # output all available ragefaces
+        if pl.startswith('!rage') and 'ragedir' in globals():
+            ragefaces = []
+            for r, d, files in os.walk(ragedir):
+                for f in files:
+                    ragefaces.append(re.sub('\.(jpe?g|png|gif|svg)', '', f))
+            if ragefaces:
+                serv.privmsg(ev.target, ', '.join(ragefaces))
+            return True
+
+        # not a known command
+        return False
+
     def on_pubmsg(self, serv, ev):
         nick = ev.source.nick.strip()
         full_date = datetime.datetime.utcnow()
@@ -152,27 +203,11 @@ class Bot(irc.bot.SingleServerIRCBot):
         if (re.search('[\[#]\ *nolog\ *[#\]]', pl, re.I)) or 'nolog' in nick:
             return
 
-        match = re.search('^!tweet\s(.*)$', pl, re.I)
-        if match:
-            if not ev.source.nick in self.auth or auth[ev.source.nick]['twitter'] is not True:
-                serv.privmsg(ev.target, "no.")
-                return
-            msg = match.group(1)
-            if (len(msg) > 140):
-                serv.privmsg(ev.target, "too long.")
-                return
-            twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-            try:
-                data = twitter.update_status(status=msg)
-                s = data['user']['screen_name']
-                i = data['id']
-                out = 'Status updated: https://twitter.com/{0}/status/{1}'.format(s, i)
-                serv.privmsg(ev.target, out)
-                logger.info(ev.source.nick + " updated twitter: " + msg)
-            except TwythonAuthError:
-                logger.warn("twitter: can't authenticate")
+        # handle !commands
+        if pl.startswith('!') and self.handle_pubcmd(serv, ev) is True:
             return
 
+        # handle regular irc lines
         date, clock = full_date.isoformat().split('T')
         clock = re.sub('\.[0-9]+', '', clock)
         channel = ev.target.replace('#', '')
@@ -250,7 +285,6 @@ class Bot(irc.bot.SingleServerIRCBot):
 
             # cleanup thread in order to be able to restart
             self.t = None
-
 
     def do_cmd(self, serv, cmd):
         global tweetrelay
