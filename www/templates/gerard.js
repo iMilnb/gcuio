@@ -66,10 +66,37 @@ var rabbitify = function(url) {
     return data;
 }
 
+var showrage = function(line) {
+    var larr = line.match(/(.*)\[img:([^\s\]]+|$)?\](.*)/);
+
+    if (larr && larr.length > 3) {
+        var imgurl = '{{ url_for("images", filename="") }}';
+        imgurl += 'rage/' + larr[2] + '.png';
+
+        $.ajax({
+            async: false,
+            url: imgurl,
+            type: 'HEAD',
+            error: function() {
+                return false;
+            },
+            success: function() {
+                line = larr[1];
+                line +=  ' <img src="' + imgurl + '" width="100">' + larr[3];
+                return false;
+            }
+        });
+    }
+
+    return line;
+}
+
 /* replaces line URLs with clickable links and apply minimal markdown*/
 var decoline = function(source) {
     /* minimal markdown */
     var l = minimd(escape_html(source.line + ' '));
+    /* display rage faces if they exist */
+    l = showrage(l);
     /* foreach URLs in line, make them a href */
     $.each(source.urls, function() {
         var eurl = escape_html(this);
