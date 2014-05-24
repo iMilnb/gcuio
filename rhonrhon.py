@@ -189,7 +189,20 @@ class Bot(irc.bot.SingleServerIRCBot):
                 for f in files:
                     ragefaces.append(re.sub('\.(jpe?g|png|gif|svg)', '', f))
             if ragefaces:
-                serv.privmsg(ev.target, ', '.join(ragefaces))
+                l = 0
+                curline = ''
+                rarr = []
+                while len(ragefaces) > 0:
+                    rage = ragefaces.pop()
+                    if len(curline) + len(rage) < 500:
+                        rarr.append(rage)
+                        curline = ', '.join(rarr)
+                    else:
+                        serv.privmsg(ev.target, curline)
+                        curline = rage
+                        rarr = [rage]
+                            
+                serv.privmsg(ev.target, ', '.join(rarr))
             return True
 
         # not a known command
