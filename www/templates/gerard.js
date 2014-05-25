@@ -66,24 +66,35 @@ var rabbitify = function(url) {
     return data;
 }
 
+var url_exists = function(url) {
+    var exists = false;
+    $.ajax({
+        async: false,
+        url: url,
+        type: 'HEAD',
+        success: function() {
+            exists = true;
+            return false;
+        }
+    });
+
+    return exists;
+}
+
 var showrage = function(line) {
     var larr = line.match(/(.*)\[img:([^\s\]]+|$)?\](.*)/);
 
     if (larr && larr.length > 3) {
-        var imgurl = '{{ url_for("images", filename="") }}';
-        imgurl += 'rage/' + larr[2] + '.png';
+        var imgext = ['png', 'gif', 'jpg'];
+        var baseurl = '{{ url_for("images", filename="") }}';
 
-        $.ajax({
-            async: false,
-            url: imgurl,
-            type: 'HEAD',
-            error: function() {
-                return false;
-            },
-            success: function() {
+        $.each(imgext, function() {
+            imgurl = baseurl + 'rage/' + larr[2] + '.' + this;
+
+            if (url_exists(imgurl)) {
                 line = larr[1];
-                line +=  ' <img src="' + imgurl + '" width="100">' + larr[3];
-                return false;
+                line += ' <img src="' + imgurl + '" width="100">' + larr[3];
+                return true;
             }
         });
     }
