@@ -189,6 +189,7 @@ class Bot(irc.bot.SingleServerIRCBot):
                 for f in files:
                     ragefaces.append(re.sub('\.(jpe?g|png|gif|svg)', '', f))
             if ragefaces:
+                ragefaces.sort(reverse=True)
                 l = 0
                 curline = ''
                 rarr = []
@@ -201,7 +202,7 @@ class Bot(irc.bot.SingleServerIRCBot):
                         serv.privmsg(ev.target, curline)
                         curline = rage
                         rarr = [rage]
-                            
+
                 serv.privmsg(ev.target, ', '.join(rarr))
             return True
 
