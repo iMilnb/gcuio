@@ -213,7 +213,7 @@ class Bot(irc.bot.SingleServerIRCBot):
 
         # output all available ragefaces
         if pl.startswith('!rage'):
-            showrage(serv, ev, 'pub')
+            self.showrage(serv, ev, 'pub')
             return True
 
         # not a known command
