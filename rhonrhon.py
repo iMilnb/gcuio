@@ -145,6 +145,36 @@ class Bot(irc.bot.SingleServerIRCBot):
     def on_kick(self, serv, ev):
         self.chanjoin(serv)
 
+    def showmsg(self, serv, ev, t, line):
+        if t == 'pub':
+            serv.privmsg(ev.target, line)
+        if t == 'priv':
+            serv.notice(ev.source.nick, line)
+
+    def showrage(self, serv, ev, t):
+        if 'ragedir' in globals():
+            ragefaces = []
+            for r, d, files in os.walk(ragedir):
+                for f in files:
+                    ragefaces.append(re.sub('\.(jpe?g|png|gif|svg)', '', f))
+            if ragefaces:
+                ragefaces.sort(reverse=True)
+                l = 0
+                curline = ''
+                rarr = []
+                while len(ragefaces) > 0:
+                    rage = ragefaces.pop()
+                    if len(curline) + len(rage) < 500:
+                        rarr.append(rage)
+                        curline = ', '.join(rarr)
+                    else:
+                        self.showmsg(serv, ev, t, curline)
+                        curline = rage
+                        rarr = [rage]
+
+                self.showmsg(serv, ev, t, ', '.join(rarr))
+            return True
+
     def handle_pubcmd(self, serv, ev):
         '''
         Handle public IRC bot-style commands e.g. !foo
@@ -183,27 +213,8 @@ class Bot(irc.bot.SingleServerIRCBot):
             return True
 
         # output all available ragefaces
-        if pl.startswith('!rage') and 'ragedir' in globals():
-            ragefaces = []
-            for r, d, files in os.walk(ragedir):
-                for f in files:
-                    ragefaces.append(re.sub('\.(jpe?g|png|gif|svg)', '', f))
-            if ragefaces:
-                ragefaces.sort(reverse=True)
-                l = 0
-                curline = ''
-                rarr = []
-                while len(ragefaces) > 0:
-                    rage = ragefaces.pop()
-                    if len(curline) + len(rage) < 500:
-                        rarr.append(rage)
-                        curline = ', '.join(rarr)
-                    else:
-                        serv.privmsg(ev.target, curline)
-                        curline = rage
-                        rarr = [rage]
-
-                serv.privmsg(ev.target, ', '.join(rarr))
+        if pl.startswith('!rage'):
+            showrage(serv, ev, 'pub')
             return True
 
         # not a known command
@@ -269,9 +280,20 @@ class Bot(irc.bot.SingleServerIRCBot):
         r = es.index(index=es_idx, doc_type=channel, body=json.dumps(data))
         logger.debug(r)
 
+    def handle_noauth_privcmd(self, serv, ev, s):
+        if s[0] == 'rage':
+            self.showrage(serv, ev, 'priv')
+            return True
+
+        return False
+
     def on_privmsg(self, serv, ev):
         pl = ev.arguments[0]
         s = pl.split(' ')
+        if not s:
+            return  # no command passed (is it even possible ? :)
+        if self.handle_noauth_privcmd(serv, ev, s) is True:
+            return  # a publicly accessible command was provided
         if not ev.source.nick in auth.keys():
             return
         if len(s) > 1 and s[0] == 'auth' and ev.source.nick in auth:
