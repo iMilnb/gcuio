@@ -173,7 +173,6 @@ class Bot(irc.bot.SingleServerIRCBot):
                         rarr = [rage]
 
                 self.showmsg(serv, ev, t, ', '.join(rarr))
-            return True
 
     def handle_pubcmd(self, serv, ev):
         '''
