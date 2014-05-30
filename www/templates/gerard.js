@@ -82,7 +82,7 @@ var url_exists = function(url) {
 }
 
 var showrage = function(line) {
-    var larr = line.match(/(.*)\[img:([^\s\]]+|$)?\](.*)/);
+    var larr = line.match(/(.*)\[img:([a-zA-Z0-9_-]+)\](.*)/);
 
     if (larr && larr.length > 3) {
         var imgext = ['png', 'gif', 'jpg'];
@@ -93,7 +93,8 @@ var showrage = function(line) {
 
             if (url_exists(imgurl)) {
                 line = larr[1];
-                line += ' <img src="' + imgurl + '" width="100">' + larr[3];
+                line += ' <img src="' + encodeURIComponent(imgurl) + '" width="100"/>';
+	        line += larr[3];
                 return true;
             }
         });
