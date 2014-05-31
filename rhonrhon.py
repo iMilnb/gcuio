@@ -227,6 +227,10 @@ class Bot(irc.bot.SingleServerIRCBot):
         if (re.search('[\[#]\ *nolog\ *[#\]]', pl, re.I)) or 'nolog' in nick:
             return
 
+        # stop logging pinpin's "foo runne <irc client>"
+        if nick.startswith('pinpin') and re.search('runne ', pl):
+            return
+
         # handle !commands
         if pl.startswith('!') and self.handle_pubcmd(serv, ev) is True:
             return
