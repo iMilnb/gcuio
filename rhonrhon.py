@@ -150,6 +150,36 @@ class Bot(irc.bot.SingleServerIRCBot):
             pl = re.sub(tagmatch, ' ', pl).rstrip(' ')
 
         urls = re.findall('(https?://[^\s]+)', pl)
+        urls_copy = list(urls)
+        for url in urls_copy:
+            url_removed = False
+            tomatch = '^{0}$'.format(url)
+            urlbody = {
+                    'query': {
+                        'match': {'urls': url}
+                        },
+                    'size': 100
+                    }
+            res = es.search(index=es_idx, doc_type=channel, body=urlbody);
+            for rep in res['hits']['hits']:
+                if url_removed:
+                    break
+
+                for matched_url in rep['_source']['urls']:
+                    if re.search(tomatch, matched_url):
+                        serv.privmsg('#{0}'.format(channel),
+                            '{0}: VIEUX ! The URL [ {1} ] has been posted by {2}  on the {3} at {4}.'.
+                                format(
+                                    rep['_source']['nick'],
+                                    url,
+                                    'you' if rep['_source']['nick'] == nick
+                                          else rep['_source']['nick'],
+                                    rep['_source']['date'],
+                                    rep['_source']['time']))
+                        urls.remove(url)
+                        url_removed = True;
+                        break
+
 
         has_nick = False
         tonick = []
