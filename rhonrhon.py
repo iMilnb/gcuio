@@ -71,6 +71,12 @@ class TwiStreamer(TwythonStreamer):
 
     ircbot = None
 
+    TWEET_TEXT_REPLACE = {
+        '\n': ' ',
+        '&lt;': '<',
+        '&gt;': '>',
+    }
+
     def on_success(self, data):
         if 'text' in data:
             if self.ircbot is None:
@@ -81,7 +87,9 @@ class TwiStreamer(TwythonStreamer):
                     if re.search(twichans[k], data['text']):
                         s = data['user']['screen_name']
                         n = data['user']['name']
-                        t = data['text'].replace('\n', ' ')
+                        t = data['text']
+                        for text, repl in self.TWEET_TEXT_REPLACE.items():
+                            t = t.replace(text, repl)
                         out = '<@{0} ({1})> {2}'.format(s, n, t)
                         out = out[0:512]
 
