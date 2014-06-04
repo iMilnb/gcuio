@@ -253,27 +253,25 @@ class Bot(irc.bot.SingleServerIRCBot):
         urls = re.findall('(https?://[^\s]+)', pl)
         urls_copy = list(urls)
         for url in urls_copy:
-            tomatch = '^{0}$'.format(url)
             urlbody = {
-                    'query': {
-                        'match_phrase': {'urls': url}
-                        },
-                    'size': 1
-                    }
-            res = es.search(index=es_idx, doc_type=channel, body=urlbody);
+                'query': {
+                    'match_phrase': {'urls': url}
+                },
+                'size': 1
+            }
+            res = es.search(index=es_idx, doc_type=channel, body=urlbody)
             for rep in res['hits']['hits']:
+                msg = '{0}: VIEUX ! The URL [ {1} ] has been posted '
+                msg = msg + 'by {2} the {3} at {4}.'
                 serv.privmsg('#{0}'.format(channel),
-                        '{0}: VIEUX ! The URL [ {1} ] has been posted by {2} on the {3} at {4}.'.
-                        format(
-                            rep['_source']['nick'],
-                            url,
-                            'you' if rep['_source']['nick'] == nick
-                            else rep['_source']['nick'],
-                            rep['_source']['date'],
-                            rep['_source']['time']))
+                             msg.format(rep['_source']['nick'],
+                                        url,
+                                        'you' if rep['_source']['nick'] == nick
+                                        else rep['_source']['nick'],
+                                        rep['_source']['date'],
+                                        rep['_source']['time']))
                 urls.remove(url)
                 break
-
 
         has_nick = False
         tonick = []
