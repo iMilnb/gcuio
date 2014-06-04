@@ -172,7 +172,7 @@ class Bot(irc.bot.SingleServerIRCBot):
                 rarr = []
                 while len(ragefaces) > 0:
                     rage = ragefaces.pop()
-                    if len(curline) + len(rage) < 500:
+                    if len(curline) + len(rage) < 450:
                         rarr.append(rage)
                         curline = ', '.join(rarr)
                     else:
