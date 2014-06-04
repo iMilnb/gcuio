@@ -272,7 +272,7 @@ class Bot(irc.bot.SingleServerIRCBot):
                 msg = '{0}: VIEUX ! The URL [ {1} ] has been posted '
                 msg = msg + 'by {2} the {3} at {4}.'
                 serv.privmsg('#{0}'.format(channel),
-                             msg.format(rep['_source']['nick'],
+                             msg.format(nick,
                                         url,
                                         'you' if rep['_source']['nick'] == nick
                                         else rep['_source']['nick'],
