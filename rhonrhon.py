@@ -18,6 +18,8 @@ from twython import TwythonStreamer
 from twython import TwythonError, TwythonRateLimitError, TwythonAuthError
 from daemonize import Daemonize
 
+import rhonmod.coin
+
 # ~/.rhonrhonrc example
 #
 # name = "rhonrhon"
@@ -182,6 +184,10 @@ class Bot(irc.bot.SingleServerIRCBot):
 
                 self.showmsg(serv, ev, t, ', '.join(rarr))
 
+    def showcoin(self, serv, ev, t):
+        args = ev.arguments[0].strip().split(' ')
+        self.showmsg(serv, ev, t, rhonmod.coin.reply(args))
+
     def handle_pubcmd(self, serv, ev):
         '''
         Handle public IRC bot-style commands e.g. !foo
@@ -222,6 +228,11 @@ class Bot(irc.bot.SingleServerIRCBot):
         # output all available ragefaces
         if pl.startswith('!rage'):
             self.showrage(serv, ev, 'pub')
+            return True
+
+        # output coin values
+        if pl.startswith('!coin'):
+            self.showcoin(serv, ev, 'pub')
             return True
 
         # not a known command
@@ -315,6 +326,9 @@ class Bot(irc.bot.SingleServerIRCBot):
     def handle_noauth_privcmd(self, serv, ev, s):
         if s[0] == 'rage':
             self.showrage(serv, ev, 'priv')
+            return True
+        if s[0] == 'coin':
+            self.showcoin(serv, ev, 'priv')
             return True
 
         return False
