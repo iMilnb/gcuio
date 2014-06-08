@@ -337,9 +337,6 @@ class Bot(irc.bot.SingleServerIRCBot):
         if s[0] == 'rage':
             self.showrage(serv, ev, 'priv')
             return True
-        if s[0] == 'coin':
-            self.showcoin(serv, ev, 'priv')
-            return True
 
         return False
 

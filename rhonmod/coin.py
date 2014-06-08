@@ -40,7 +40,7 @@ def reply(args):
     rep = '1 BTC -> {0} EUR / 1 {1} -> {2} BTC / 1 {1} -> {3} EUR'
     rep = rep.format(e, args[1], c, ratio)
 
-    if len(args) > 2:
+    if len(args) > 2 and len(args[2]) < 20:
         try:
             val = int(args[2]) * ratio
             rep = rep + ' / {0} {1} -> {2} EUR'.format(args[2], args[1], val)
