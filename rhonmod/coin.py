@@ -41,7 +41,10 @@ def reply(args):
     rep = rep.format(e, args[1], c, ratio)
 
     if len(args) > 2:
-        val = int(args[2]) * ratio
-        rep = rep + ' / {0} {1} -> {2} EUR'.format(args[2], args[1], val)
+        try:
+            val = int(args[2]) * ratio
+            rep = rep + ' / {0} {1} -> {2} EUR'.format(args[2], args[1], val)
+        except ValueError:
+            pass
 
     return rep
