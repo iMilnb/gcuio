@@ -26,7 +26,7 @@ def btc_to_eur():
 
 
 def reply(args):
-    if len(args) < 2:
+    if len(args) < 2 or len(args[1]) > 5:
         return 'usage: coin <currency> [amount]'
 
     e = btc_to_eur()  # get current EUR price for 1 BTC
