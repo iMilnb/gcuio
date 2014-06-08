@@ -280,32 +280,27 @@ class Bot(irc.bot.SingleServerIRCBot):
             }
             res = es.search(index=es_idx, doc_type=channel, body=urlbody)
             for rep in res['hits']['hits']:
-                # vieuxtage only on *exact* match
-                for repurl in rep['_source']['date']['urls']:
-                    if repurl != url:
-                        continue
+                try:
+                    msg = '{0}: VIEUX ! The URL [ {1} ] has been posted '
+                    msg = msg + 'by {2} the {3} at {4}.'
 
-                    try:
-                        msg = '{0}: VIEUX ! The URL [ {1} ] has been posted '
+                    if len(msg) > 512:
+                        msg = '{0}: VIEUX ! This URL has been posted '
                         msg = msg + 'by {2} the {3} at {4}.'
 
-                        if len(msg) > 512:
-                            msg = '{0}: VIEUX ! This URL has been posted '
-                            msg = msg + 'by {2} the {3} at {4}.'
+                    serv.privmsg('#{0}'.format(channel),
+                                 msg.format(nick,
+                                            url,
+                                            'you' if rep['_source']['nick'] == nick
+                                            else rep['_source']['nick'],
+                                            rep['_source']['date'],
+                                            rep['_source']['time']))
+                except Exception as e:
+                    logger.warn(e)
+                    pass
 
-                        serv.privmsg('#{0}'.format(channel),
-                                     msg.format(nick,
-                                                repurl,
-                                                'you' if rep['_source']['nick'] == nick
-                                                else rep['_source']['nick'],
-                                                rep['_source']['date'],
-                                                rep['_source']['time']))
-                    except Exception as e:
-                        logger.warn(e)
-                        pass
-
-                    urls.remove(url)
-                    break
+                urls.remove(url)
+                break
 
         has_nick = False
         tonick = []
