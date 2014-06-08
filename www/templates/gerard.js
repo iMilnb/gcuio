@@ -267,7 +267,7 @@ var _getjson = function(t, todate) {
         action = 'append';
     }
 
-    if (!lastdate) {/* first call */
+    if (!lastdate) {/* first call, no lastdate yet */
         lastdate = '';
         this['sh_' + t] = 0; /* record type scroll height */
     }
@@ -343,11 +343,6 @@ var searchjson = function(q, cnt, more) {
     else
         $(cnt).css('background-image', 'none');
 
-    $(cnt + ' [data-toggle="popover"]').popover({
-                                                container: '.modal-body',
-                                                html: true,
-                                                trigger: 'hover'
-                                            });
 }
 
 /**
@@ -484,7 +479,6 @@ $(function() {
         if (event.which == 13) {
             /* no date specified */
             searchjson(searchform.val(), '.irclive', false);
-            /* needed so the modal does not disappear */
             return false;
         };
     });
