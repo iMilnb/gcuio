@@ -58,7 +58,7 @@ def has_expected_mode(path, mode):
 
 configFile = os.path.expanduser("~") + '/.rhonrhonrc'
 if not has_expected_mode(configFile, 0o600):
-    print("err: invalid mode on configFile", configFile)
+    print("err: invalid mode on configFile, should be 600", configFile)
     sys.exit(2)
 
 exec(open(configFile).read())
@@ -344,7 +344,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         pl = ev.arguments[0]
         s = pl.split(' ')
         if not s:
-            return  # no command passed (is it even possible ? :)
+            return  # no command passed (is it even possible ? :) )
         if self.handle_noauth_privcmd(serv, ev, s) is True:
             return  # a publicly accessible command was provided
         if not ev.source.nick in auth.keys():
