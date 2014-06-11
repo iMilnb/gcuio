@@ -300,7 +300,6 @@ class Bot(irc.bot.SingleServerIRCBot):
                     pass
 
                 urls.remove(url)
-                break
 
         has_nick = False
         tonick = []
