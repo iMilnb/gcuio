@@ -346,11 +346,14 @@ class Bot(irc.bot.SingleServerIRCBot):
                 channel = 'gcu'
 
             for url in [x for x in s[i:] if re.match('(https?://[^\s]+)', x)]:
-                (vieille, rep) = self.vieille(url, channel)
-                if vieille:
-                    msg = 'VIEUX ! [ {0} ]'
+                if len(url) > 262:
+                    msg = 'SAYTROPLONG [ {0} ]'
                 else:
-                    msg = 'SAYBON  [ {0} ]'
+                    (vieille, rep) = self.vieille(url, channel)
+                    if vieille:
+                        msg = 'VIEUX ! [ {0} ]'
+                    else:
+                        msg = 'SAYBON  [ {0} ]'
                 serv.privmsg(ev.source.nick, msg.format(url))
             return True
 
