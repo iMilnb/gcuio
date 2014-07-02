@@ -114,7 +114,7 @@ class CustomLineBuffer(irc.client.LineBuffer):
 
 class Bot(irc.bot.SingleServerIRCBot):
     def __init__(self):
-        self.auth = []
+        self._registered_users = []
         self.t = None  # Twitter thread
         self.stream = None
         self.chaninfos = {}
@@ -136,6 +136,17 @@ class Bot(irc.bot.SingleServerIRCBot):
                                                         doc_type))
         except UnicodeEncodeError:
             logger.warn("Your charset does not permit to dump that dataset.")
+
+    def _user_register(self, nickmask):
+        if not(nickmask in self._registered_users):
+            self._registered_users.append(nickmask)
+
+    def _user_unregister(self, nickmask):
+        if nickmask in self._registered_users:
+            self._registered_users.remove(nickmask)
+
+    def _user_is_registered(self, nickmask):
+        return nickmask in self._registered_users
 
     def on_privnotice(self, serv, ev):
         logger.info("notice: {0}".format(ev.arguments[0]))
@@ -195,7 +206,7 @@ class Bot(irc.bot.SingleServerIRCBot):
         pl = ev.arguments[0].strip()
         nickauth = {}
         # nick is registered, get it's auth dict entry in conf file
-        if ev.source.nick in self.auth:
+        if self._user_is_registered(ev.source):
             nickauth = auth[ev.source.nick]
 
         # public tweets
@@ -308,10 +319,11 @@ class Bot(irc.bot.SingleServerIRCBot):
         tosub = re.search(tomatch, pl)
         if tosub and not re.search('https?', tosub.group(1)):
             for t in tosub.group(1).replace(' ', '').split(','):
-                for ch in self.channels.keys():
-                    if self.channels[ch].has_user(t) and ch == '#' + channel:
-                        tonick.append(t)
-                        has_nick = True
+                if t != '':
+                    for ch in self.channels.keys():
+                        if self.channels[ch].has_user(t) and ch == '#' + channel:
+                            tonick.append(t)
+                            has_nick = True
 
             if has_nick:
                 pl = re.sub(tomatch, '', pl)
@@ -353,9 +365,9 @@ class Bot(irc.bot.SingleServerIRCBot):
             h = hashlib.sha256(s[1].encode('utf-8')).hexdigest()
             nauth = auth[ev.source.nick]  # I don't exceed 80 cols.
             if 'passwd' in nauth and h == nauth['passwd']:
-                self.auth.append(ev.source.nick)
+                self._user_register(ev.source)
                 serv.notice(ev.source.nick, 'You are now authenticated')
-        if not ev.source.nick in self.auth:
+        if not self._user_is_registered(ev.source):
             return
         self.do_cmd(serv, s)
 
@@ -443,9 +455,11 @@ class Bot(irc.bot.SingleServerIRCBot):
 
     def on_part(self, serv, ev):
         self._refresh_chaninfos(ev.target)
+        self._user_unregister(ev.source)
 
     def on_quit(self, serv, ev):
         self._refresh_all_chans()  # quit doesn't set any target
+        self._user_unregister(ev.source)
 
 
 foreground = False
