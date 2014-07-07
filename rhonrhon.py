@@ -58,7 +58,7 @@ def has_expected_mode(path, mode):
 
 configFile = os.path.expanduser("~") + '/.rhonrhonrc'
 if not has_expected_mode(configFile, 0o600):
-    print("err: invalid mode on configFile", configFile)
+    print("err: invalid mode on configFile, should be 600", configFile)
     sys.exit(2)
 
 exec(open(configFile).read())
@@ -283,14 +283,8 @@ class Bot(irc.bot.SingleServerIRCBot):
         urls = re.findall('(https?://[^\s]+)', pl)
         urls_copy = list(urls)
         for url in urls_copy:
-            urlbody = {
-                'query': {
-                    'match_phrase': {'urls': url}
-                },
-                'size': 1
-            }
-            res = es.search(index=es_idx, doc_type=channel, body=urlbody)
-            for rep in res['hits']['hits']:
+            (vieille, rep) = self.vieille(url, channel)
+            if vieille:
                 try:
                     msg = '{0}: VIEUX ! The URL [ {1} ] has been posted '
                     msg = msg + 'by {2} the {3} at {4}.'
@@ -311,7 +305,6 @@ class Bot(irc.bot.SingleServerIRCBot):
                     pass
 
                 urls.remove(url)
-                break
 
         has_nick = False
         tonick = []
@@ -350,13 +343,39 @@ class Bot(irc.bot.SingleServerIRCBot):
             self.showrage(serv, ev, 'priv')
             return True
 
+        # Ask rhonrhon weither a list of URLs are old or not.
+        # Syntax: urls?:? (#channel)? text containing URLs.
+        # The default channel is #gcu.
+        # Ex: url: #gcu c'est bon la rhonrhon ? https://www.google.com
+        # Ex: urls http://www.bonjourmadame.fr ou alors
+        # http://bonjourlesroux.tumblr.com
+        if re.match('^urls?:?$', s[0]):
+            i = 1
+            if re.match('^#.*$', s[1]):
+                channel = s[1].replace('#', '')
+                i += 1
+            else:
+                channel = 'gcu'
+
+            for url in [x for x in s[i:] if re.match('(https?://[^\s]+)', x)]:
+                if len(url) > 262:
+                    msg = 'SAYTROPLONG [ {0} ]'
+                else:
+                    (vieille, rep) = self.vieille(url, channel)
+                    if vieille:
+                        msg = 'VIEUX ! [ {0} ]'
+                    else:
+                        msg = 'SAYBON  [ {0} ]'
+                serv.privmsg(ev.source.nick, msg.format(url))
+            return True
+
         return False
 
     def on_privmsg(self, serv, ev):
         pl = ev.arguments[0]
         s = pl.split(' ')
         if not s:
-            return  # no command passed (is it even possible ? :)
+            return  # no command passed (is it even possible ? :) )
         if self.handle_noauth_privcmd(serv, ev, s) is True:
             return  # a publicly accessible command was provided
         if not ev.source.nick in auth.keys():
@@ -460,6 +479,23 @@ class Bot(irc.bot.SingleServerIRCBot):
     def on_quit(self, serv, ev):
         self._refresh_all_chans()  # quit doesn't set any target
         self._user_unregister(ev.source)
+
+    def vieille(self, url, channel):
+        urlbody = {
+            'query': {
+                'match_phrase': {'urls': url}
+                },
+            'size': 1
+            }
+        try:
+            res = es.search(index=es_idx, doc_type=channel, body=urlbody)
+            for rep in res['hits']['hits']:
+                return (True, rep)
+        except Exception as e:
+            logger.warn(e)
+            pass
+        return (False, [])
+
 
 
 foreground = False
